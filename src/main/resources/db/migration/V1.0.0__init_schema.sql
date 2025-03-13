@@ -3,7 +3,7 @@
 CREATE TABLE artist_profiles (
     user_id UUID PRIMARY KEY,  -- References Supabase auth user ID
     biography TEXT,
-    social_links JSONB,         -- Stores social links as JSON (can be expanded as needed)
+    social_links TEXT,         -- Stores social links as JSON (can be expanded as needed)
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
