@@ -1,0 +1,44 @@
+package com.resonate.domain.model;
+
+import lombok.*;
+import jakarta.persistence.*;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.UUID;
+
+
+@Entity
+@Table(name = "releases")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Release {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    // The artist who owns this release
+    @Column(name = "artist_id", nullable = false)
+    private UUID artistId;
+
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @Column(name = "release_date", nullable = false)
+    private LocalDate releaseDate;
+
+    @Column(name = "upc")
+    private String upc; // Nullable official UPC
+
+    @Builder.Default
+    @Column(name = "created_at", nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
+
+    // One-to-Many relationship with Track (part of this aggregate)
+    @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Track> tracks;
+}
