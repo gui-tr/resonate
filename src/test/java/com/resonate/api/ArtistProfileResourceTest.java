@@ -45,7 +45,7 @@ public class ArtistProfileResourceTest {
 
     @Test
     @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
-    public void testCreateAndGetArtistProfile() throws JsonProcessingException {
+    public void testCreateAndGetArtistProfile() {
 
         ArtistProfile profile = ArtistProfile.builder()
                 .biography("Test bio")
@@ -71,7 +71,7 @@ public class ArtistProfileResourceTest {
 
     @Test
     @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
-    public void testDeleteArtistProfile() throws JsonProcessingException {
+    public void testDeleteArtistProfile() {
 
         ArtistProfile profile = ArtistProfile.builder()
                 .biography("Test delete")
