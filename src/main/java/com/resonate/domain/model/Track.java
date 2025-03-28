@@ -1,5 +1,6 @@
 package com.resonate.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
@@ -18,9 +19,9 @@ public class Track {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Many-to-one relationship with the Release aggregate
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "release_id", nullable = false)
+    @JsonBackReference // Prevents infinite recursion during JSON serialization
     private Release release;
 
     @Column(name = "title", nullable = false)
