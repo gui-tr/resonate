@@ -1,5 +1,6 @@
 package com.resonate.domain.model;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import java.time.LocalDate;
@@ -10,7 +11,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-
+@QuarkusTest
 class ReleaseTest {
 
     private Track mockTrack1;
@@ -26,13 +27,11 @@ class ReleaseTest {
 
     @Test
     void testReleaseCreationWithBuilder() {
-        // Given
         String title = "Test Release";
         LocalDate releaseDate = LocalDate.now();
         String upc = "123456789012";
         List<Track> tracks = Arrays.asList(mockTrack1, mockTrack2);
 
-        // When
         Release release = Release.builder()
                 .title(title)
                 .artistId(mockArtistId)
@@ -41,7 +40,6 @@ class ReleaseTest {
                 .tracks(tracks)
                 .build();
 
-        // Then
         assertNotNull(release);
         assertEquals(title, release.getTitle());
         assertEquals(mockArtistId, release.getArtistId());
@@ -53,10 +51,8 @@ class ReleaseTest {
 
     @Test
     void testReleaseCreationWithNoArgsConstructor() {
-        // When
         Release release = new Release();
 
-        // Then
         assertNotNull(release);
         assertNull(release.getTitle());
         assertNull(release.getArtistId());
@@ -69,7 +65,6 @@ class ReleaseTest {
 
     @Test
     void testReleaseCreationWithAllArgsConstructor() {
-        // Given
         Long id = 1L;
         String title = "Test Release";
         LocalDate releaseDate = LocalDate.now();
@@ -77,10 +72,8 @@ class ReleaseTest {
         List<Track> tracks = Arrays.asList(mockTrack1, mockTrack2);
         OffsetDateTime createdAt = OffsetDateTime.now();
 
-        // When
         Release release = new Release(id, mockArtistId, title, releaseDate, upc, createdAt, tracks);
 
-        // Then
         assertNotNull(release);
         assertEquals(id, release.getId());
         assertEquals(title, release.getTitle());
@@ -93,21 +86,18 @@ class ReleaseTest {
 
     @Test
     void testDefaultCreatedAtValue() {
-        // When
         Release release = Release.builder()
                 .title("Test Release")
                 .artistId(mockArtistId)
                 .releaseDate(LocalDate.now())
                 .build();
 
-        // Then
         assertNotNull(release.getCreatedAt());
         assertTrue(release.getCreatedAt().isBefore(OffsetDateTime.now().plusSeconds(1)));
     }
 
     @Test
     void testReleaseSettersAndGetters() {
-        // Given
         Release release = new Release();
         String newTitle = "New Release";
         UUID newArtistId = UUID.randomUUID();
@@ -116,7 +106,6 @@ class ReleaseTest {
         List<Track> newTracks = Arrays.asList(mockTrack1);
         OffsetDateTime now = OffsetDateTime.now();
 
-        // When
         release.setTitle(newTitle);
         release.setArtistId(newArtistId);
         release.setReleaseDate(newReleaseDate);
@@ -124,7 +113,6 @@ class ReleaseTest {
         release.setTracks(newTracks);
         release.setCreatedAt(now);
 
-        // Then
         assertEquals(newTitle, release.getTitle());
         assertEquals(newArtistId, release.getArtistId());
         assertEquals(newReleaseDate, release.getReleaseDate());
@@ -135,18 +123,15 @@ class ReleaseTest {
 
     @Test
     void testTrackListModification() {
-        // Given
         Release release = Release.builder()
                 .title("Test Release")
                 .artistId(mockArtistId)
                 .releaseDate(LocalDate.now())
                 .build();
 
-        // When
         release.getTracks().add(mockTrack1);
         release.getTracks().add(mockTrack2);
 
-        // Then
         assertEquals(2, release.getTracks().size());
         assertTrue(release.getTracks().contains(mockTrack1));
         assertTrue(release.getTracks().contains(mockTrack2));

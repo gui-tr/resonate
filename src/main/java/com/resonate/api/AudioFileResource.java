@@ -25,7 +25,7 @@ public class AudioFileResource {
 
 
     @GET
-    @Path("/upload-url")
+    @Path("/upload")
     @Operation(summary = "Generate a signed URL for file upload", description = "Returns a signed URL that allows the client to directly upload a file to Backblaze B2")
     @APIResponse(responseCode = "200", description = "Signed URL generated successfully")
     public Response getSignedUploadUrl(@QueryParam("fileName") String fileName) {
