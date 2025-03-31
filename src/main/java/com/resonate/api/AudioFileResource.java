@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-@Path("/api/media-files")
+@Path("/api/audio-files")
 @Authenticated
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

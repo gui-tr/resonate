@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
 @QuarkusTest
 public class AudioFileResourceTest {
 
-    private final String basePath = "/api/media-files";
+    private final String basePath = "/api/audio-files";
 
     // Use a constant mock user ID for tests.
     private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";

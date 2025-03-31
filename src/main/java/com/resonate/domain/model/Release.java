@@ -5,9 +5,9 @@ import lombok.*;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 
 @Entity
 @Table(name = "releases")
@@ -39,7 +39,8 @@ public class Release {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
+    @Builder.Default
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference // Prevents infinite recursion during JSON serialization
-    private List<Track> tracks;
+    private List<Track> tracks = new ArrayList<>();
 }
