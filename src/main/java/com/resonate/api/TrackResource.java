@@ -2,8 +2,10 @@ package com.resonate.api;
 
 import com.resonate.domain.model.Release;
 import com.resonate.domain.model.Track;
+import com.resonate.domain.media.AudioFile;
 import com.resonate.infrastructure.repository.ReleaseRepository;
 import com.resonate.infrastructure.repository.TrackRepository;
+import com.resonate.infrastructure.repository.AudioFileRepository;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -16,8 +18,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.UUID;
 
-@Path("/api/tracks")
 @Authenticated
+@Path("/api/tracks")
 @Tag(name = "Track", description = "Operations related to tracks")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -30,15 +32,20 @@ public class TrackResource {
     ReleaseRepository releaseRepository;
 
     @Inject
+    AudioFileRepository audioFileRepository;
+
+    @Inject
     SecurityIdentity securityIdentity;
 
     @POST
     @Transactional
-    @Operation(summary = "Create track", description = "Creates a new track for a given release. The release must belong to the authenticated artist.")
+    @Operation(summary = "Create track", description = "Creates a new track for a given release. The release must belong to the authenticated artist. Optionally, an audioFileId can be provided to link the track to an audio file.")
     @APIResponse(responseCode = "201", description = "Track created successfully")
-    @APIResponse(responseCode = "404", description = "Release not found")
+    @APIResponse(responseCode = "404", description = "Release or Audio File not found")
     @APIResponse(responseCode = "403", description = "Not authorized to add track to this release")
-    public Response createTrack(Track track, @QueryParam("releaseId") Long releaseId) {
+    public Response createTrack(Track track,
+                                @QueryParam("releaseId") Long releaseId,
+                                @QueryParam("audioFileId") Long audioFileId) {
         Release release = releaseRepository.findById(releaseId);
         if (release == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -50,6 +57,15 @@ public class TrackResource {
                     .entity("Not authorized to add track to this release").build();
         }
         track.setRelease(release);
+        // If an audioFileId is provided, fetch the AudioFile and set it on the track.
+        if (audioFileId != null) {
+            AudioFile audioFile = audioFileRepository.findById(audioFileId);
+            if (audioFile == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Audio file not found").build();
+            }
+            track.setAudioFile(audioFile);
+        }
         trackRepository.persist(track);
         return Response.status(Response.Status.CREATED).entity(track).build();
     }
@@ -71,11 +87,11 @@ public class TrackResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    @Operation(summary = "Update track", description = "Updates an existing track for the authenticated artist")
+    @Operation(summary = "Update track", description = "Updates an existing track for the authenticated artist. Optionally, the track can be re-linked to a different audio file.")
     @APIResponse(responseCode = "200", description = "Track updated successfully")
     @APIResponse(responseCode = "403", description = "Not authorized to update this track")
     @APIResponse(responseCode = "404", description = "Track not found")
-    public Response updateTrack(@PathParam("id") Long id, Track updatedTrack) {
+    public Response updateTrack(@PathParam("id") Long id, Track updatedTrack, @QueryParam("audioFileId") Long audioFileId) {
         Track track = trackRepository.findById(id);
         if (track == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -91,6 +107,15 @@ public class TrackResource {
         track.setIsrc(updatedTrack.getIsrc());
         track.setFilePath(updatedTrack.getFilePath());
         track.setFileSize(updatedTrack.getFileSize());
+
+        if (audioFileId != null) {
+            AudioFile audioFile = audioFileRepository.findById(audioFileId);
+            if (audioFile == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity("Audio file not found").build();
+            }
+            track.setAudioFile(audioFile);
+        }
         trackRepository.persist(track);
         return Response.ok(track).build();
     }
