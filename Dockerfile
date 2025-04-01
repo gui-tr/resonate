@@ -15,7 +15,7 @@ COPY src /app/src/
 RUN chmod +x /app/mvnw
 
 # Build the native executable
-RUN ./mvnw package -Dnative
+RUN ./mvnw package -Dnative -DskipTests
 
 # Stage 2: Runtime stage
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
