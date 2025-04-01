@@ -17,16 +17,11 @@ COPY src src
 RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false
 
 # Create a minimal runtime image
-FROM quay.io/quarkus/quarkus-micro-image:2.0
+FROM quay.io/quarkus/ubi9-quarkus-micro-image:2.0
 WORKDIR /work/
 
 # Copy the native executable
-COPY --from=build /app/target/*-runner /work/application
-
-# Configure permissions
-RUN chmod 775 /work /work/application
+COPY --chmod=0755 target/*-runner /work/application
 
 EXPOSE 8080
-USER quarkus
-
 CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
