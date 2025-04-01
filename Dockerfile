@@ -1,5 +1,5 @@
 # Use GraalVM as base image
-FROM ghcr.io/graalvm/graalvm-community:17 AS build
+FROM ghcr.io/graalvm/graalvm-community:21 AS build
 
 # Install native-image component
 RUN gu install native-image
