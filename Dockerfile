@@ -1,13 +1,20 @@
+####
+# Multi-stage Dockerfile to build and run Quarkus Native App
+###
+
 # Stage 1: Build stage using GraalVM
 FROM ghcr.io/graalvm/jdk-community:21 as build
 
 WORKDIR /app
 
-# Copy all necessary files into container
-COPY . /app
-
-# Grant executable permissions to Maven wrapper
+# Copy Maven wrapper files first
+COPY mvnw mvnw.cmd /app/
+COPY .mvn /app/.mvn
 RUN chmod +x ./mvnw
+
+# Now copy the remaining files
+COPY src /app/src
+COPY pom.xml /app/pom.xml
 
 # Build the native executable
 RUN ./mvnw package -Dnative
