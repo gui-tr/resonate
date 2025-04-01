@@ -1,4 +1,12 @@
+# Ignore everything
 *
+
+# Allow these files/directories that are needed for builds
+!pom.xml
+!mvnw
+!mvnw.cmd
+!.mvn/
+!src/
 !target/*-runner
 !target/*-runner.jar
 !target/lib/*
