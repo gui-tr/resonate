@@ -13,8 +13,10 @@ COPY src src
 # Make the Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Build the native executable - no need to install native-image as it's already included
-RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false
+# Build the native executable with increased memory allocation
+RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false \
+    -Dquarkus.native.native-image-xmx=4g \
+    -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1-java21
 
 # Create a minimal runtime image
 FROM quay.io/quarkus/quarkus-micro-image:2.0
