@@ -1,8 +1,5 @@
-# Use GraalVM with Java 21
-FROM ghcr.io/graalvm/graalvm-community:21 AS build
-
-# Install native-image component
-RUN gu install native-image
+# Use Oracle's official GraalVM image with Java 21
+FROM container-registry.oracle.com/graalvm/native-image:21 AS build
 
 # Set working directory
 WORKDIR /app
@@ -16,7 +13,7 @@ COPY src src
 # Make the Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Build the native executable directly with GraalVM
+# Build the native executable - no need to install native-image as it's already included
 RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false
 
 # Create a minimal runtime image
