@@ -1,45 +1,29 @@
-#### BUILD STAGE ####
-# This first stage builds the application
-FROM eclipse-temurin:21-jdk AS build
-
-# Set working directory
-WORKDIR /project
-
-# Copy Maven wrapper and pom.xml first for better layer caching
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-
-# Make Maven wrapper executable
-RUN chmod +x mvnw
-
-# Download dependencies (if possible, may fail but that's ok)
-RUN ./mvnw dependency:go-offline -B || echo "Dependencies may not be fully resolved"
-
-# Copy source code
-COPY src src
-
-# Build the application
-RUN ./mvnw package -DskipTests
-
-#### RUNTIME STAGE ####
-# This second stage creates the runtime image
-FROM eclipse-temurin:21-jre
-
-ENV LANGUAGE='en_US:en'
-
-# Create deployment directory
-RUN mkdir -p /deployments
-
-# We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --from=build /project/target/quarkus-app/lib/ /deployments/lib/
-COPY --from=build /project/target/quarkus-app/*.jar /deployments/
-COPY --from=build /project/target/quarkus-app/app/ /deployments/app/
-COPY --from=build /project/target/quarkus-app/quarkus/ /deployments/quarkus/
+####
+# This Dockerfile is used in order to build a container that runs the Quarkus application in native (no JVM) mode.
+#
+# Before building the container image run:
+#
+./mvnw package -Dnative
+#
+# Then, build the image with:
+#
+docker build -f src/main/docker/Dockerfile.native -t quarkus/core .
+#
+# Then run the container using:
+#
+docker run -i --rm -p 8080:8080 quarkus/core
+#
+# The ` registry.access.redhat.com/ubi9/ubi-minimal:9.5` base image is based on UBI 9.
+# To use UBI 8, switch to `quay.io/ubi8/ubi-minimal:8.10`.
+###
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+WORKDIR /work/
+RUN chown 1001 /work \
+    && chmod "g+rwX" /work \
+    && chown 1001:root /work
+COPY --chown=1001:root --chmod=0755 target/*-runner /work/application
 
 EXPOSE 8080
-ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
-ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+USER 1001
 
-# Add support for Render's dynamic port assignment
-CMD java ${JAVA_OPTS} -Dquarkus.http.port=${PORT:-8080} -jar ${JAVA_APP_JAR}
+ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
