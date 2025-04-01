@@ -1,29 +1,31 @@
-####
- # This Dockerfile is used in order to build a container that runs the Quarkus application in native (no JVM) mode.
- #
- # Before building the container image run:
- #
- ./mvnw package -Dnative
- #
- # Then, build the image with:
- #
- docker build -f ./Dockerfile -t quarkus/core .
- #
- # Then run the container using:
- #
- docker run -i --rm -p 8080:8080 quarkus/core
- #
- # The ` registry.access.redhat.com/ubi9/ubi-minimal:9.5` base image is based on UBI 9.
- # To use UBI 8, switch to `quay.io/ubi8/ubi-minimal:8.10`.
- ###
- FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
- WORKDIR /work/
- RUN chown 1001 /work \
-     && chmod "g+rwX" /work \
-     && chown 1001:root /work
- COPY --chown=1001:root --chmod=0755 target/*-runner /work/application
- 
- EXPOSE 8080
- USER 1001
- 
- ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
+# Stage 1: Build stage using GraalVM
+FROM ghcr.io/graalvm/jdk-community:21 as build
+
+WORKDIR /app
+
+# Copy all necessary files into container
+COPY . /app
+
+# Grant executable permissions to Maven wrapper
+RUN chmod +x ./mvnw
+
+# Build the native executable
+RUN ./mvnw package -Dnative
+
+# Stage 2: Runtime stage (minimal image)
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+
+WORKDIR /work
+
+RUN chown 1001 /work \
+    && chmod "g+rwX" /work \
+    && chown 1001:root /work
+
+# Copy native executable from the build stage
+COPY --from=build --chown=1001:root --chmod=0755 /app/target/*-runner /work/application
+
+EXPOSE 8080
+
+USER 1001
+
+ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
