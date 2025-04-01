@@ -1,4 +1,4 @@
-# Use GraalVM as base image
+# Use GraalVM with Java 21
 FROM ghcr.io/graalvm/graalvm-community:21 AS build
 
 # Install native-image component
