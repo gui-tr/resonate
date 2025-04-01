@@ -1,36 +1,32 @@
-# Stage 1: Build stage using GraalVM
-FROM ghcr.io/graalvm/jdk-community:21 as build
+# Use GraalVM as base image
+FROM ghcr.io/graalvm/graalvm-community:17 AS build
 
+# Install native-image component
+RUN gu install native-image
+
+# Set working directory
 WORKDIR /app
 
-# Copy Maven wrapper scripts
-COPY mvnw mvnw.cmd /app/
-COPY .mvn /app/.mvn
+# Copy the project files
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+COPY src src
 
-# Copy application source and configuration
-COPY pom.xml /app/
-COPY src /app/src/
+# Build the native executable directly with GraalVM
+RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false
 
-# Grant execute permission to Maven wrapper
-RUN chmod +x /app/mvnw
+# Create a minimal runtime image
+FROM quay.io/quarkus/quarkus-micro-image:2.0
+WORKDIR /work/
 
-# Build the native executable
-RUN ./mvnw package -Dnative -DskipTests
+# Copy the native executable
+COPY --from=build /app/target/*-runner /work/application
 
-# Stage 2: Runtime stage
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
-
-WORKDIR /work
-
-# Set permissions
-RUN chown 1001 /work \
-    && chmod "g+rwX" /work \
-    && chown 1001:root /work
-
-# Copy the native executable from the build stage
-COPY --from=build --chown=1001:root --chmod=0755 /app/target/*-runner /work/application
+# Configure permissions
+RUN chmod 775 /work /work/application
 
 EXPOSE 8080
-USER 1001
+USER quarkus
 
-ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
