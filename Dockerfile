@@ -31,4 +31,5 @@ RUN chmod 775 /work /work/application
 EXPOSE 8080
 USER quarkus
 
-CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
+# Use the PORT environment variable from Render
+CMD ./application -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=${PORT:-8080}
