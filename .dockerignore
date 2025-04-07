@@ -1,6 +1,3 @@
-# Ignore everything
-*
-
 # Allow these files/directories that are needed for builds
 !pom.xml
 !mvnw
