@@ -15,7 +15,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Spin up a PostgreSQL container for testing.
     services:
       postgres:
         image: postgres:13
@@ -55,12 +54,20 @@ jobs:
           sed -i "s/\${SUPABASE_PASSWORD}/${{ secrets.SUPABASE_PASSWORD }}/g" src/main/resources/application.properties
           sed -i "s/\${JWT_SECRET}/${{ secrets.JWT_SECRET }}/g" src/main/resources/application.properties
 
-      - name: Build and Test with Maven
+      - name: Wait for PostgreSQL to be Ready
         run: |
-          mvn clean verify \
-            -Dquarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/testdb \
-            -Dquarkus.datasource.username=testuser \
-            -Dquarkus.datasource.password=testpassword
+          echo "Waiting for postgres..."
+          until nc -z postgres 5432; do
+            echo "Postgres is not available yet. Sleeping for 5 seconds..."
+            sleep 5
+          done
+          echo "Postgres is up and running!"
+
+      - name: Build and Test with Maven
+        run: mvn clean verify \
+             -Dquarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/testdb \
+             -Dquarkus.datasource.username=testuser \
+             -Dquarkus.datasource.password=testpassword
 
       - name: Generate Code Coverage Report
         run: mvn jacoco:report
@@ -75,9 +82,9 @@ jobs:
 
       - name: Package Application
         run: mvn package -Dquarkus.profile=dev \
-            -Dquarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/testdb \
-            -Dquarkus.datasource.username=testuser \
-            -Dquarkus.datasource.password=testpassword
+             -Dquarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/testdb \
+             -Dquarkus.datasource.username=testuser \
+             -Dquarkus.datasource.password=testpassword
 
       - name: Build Docker Image
         run: docker build -t resonate:${{ github.run_number }} .
