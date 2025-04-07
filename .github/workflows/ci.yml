@@ -15,6 +15,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # Spin up a PostgreSQL container for testing.
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U testuser" 
+          --health-interval=10s 
+          --health-timeout=5s 
+          --health-retries=5
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -24,7 +40,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-
+    
       - name: Prepare Configuration
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
@@ -40,7 +56,11 @@ jobs:
           sed -i "s/\${JWT_SECRET}/${{ secrets.JWT_SECRET }}/g" src/main/resources/application.properties
 
       - name: Build and Test with Maven
-        run: mvn clean verify
+        run: |
+          mvn clean verify \
+            -Dquarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/testdb \
+            -Dquarkus.datasource.username=testuser \
+            -Dquarkus.datasource.password=testpassword
 
       - name: Generate Code Coverage Report
         run: mvn jacoco:report
@@ -54,7 +74,10 @@ jobs:
         run: mvn dependency-check:check
 
       - name: Package Application
-        run: mvn package -Dquarkus.profile=dev
+        run: mvn package -Dquarkus.profile=dev \
+            -Dquarkus.datasource.jdbc.url=jdbc:postgresql://postgres:5432/testdb \
+            -Dquarkus.datasource.username=testuser \
+            -Dquarkus.datasource.password=testpassword
 
       - name: Build Docker Image
         run: docker build -t resonate:${{ github.run_number }} .
@@ -67,7 +90,7 @@ jobs:
           IMAGE_TAG=${{ github.run_number }}
           docker tag resonate:${IMAGE_TAG} ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/resonate:${IMAGE_TAG}
           docker push ${{ secrets.DOCKER_REGISTRY }}/${{ secrets.DOCKER_USERNAME }}/resonate:${IMAGE_TAG}
-
+    
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
