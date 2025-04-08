@@ -68,11 +68,16 @@ jobs:
       - name: Generate Code Coverage Report
         run: mvn jacoco:report
       
-      - name: Run SonarQube Analysis
+      # Run SonarCloud Analysis
+      - name: Run SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn sonar:sonar -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+          mvn sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
       
       - name: Run Vulnerability Analysis
         run: mvn dependency-check:check
