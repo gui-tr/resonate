@@ -1,4 +1,4 @@
-package util;
+package com.resonate.util;
 
 import java.util.UUID;
 
