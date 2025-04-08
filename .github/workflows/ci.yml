@@ -20,7 +20,6 @@ jobs:
           POSTGRES_DB: testdb
         ports:
           - 5432:5432
-        # Improved health check parameters
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -50,13 +49,38 @@ jobs:
           sed -i "s/\${SUPABASE_PASSWORD}/${{ secrets.SUPABASE_PASSWORD }}/g" src/main/resources/application.properties
           sed -i "s/\${JWT_SECRET}/${{ secrets.JWT_SECRET }}/g" src/main/resources/application.properties
       
-      # Let GitHub Actions' health check handle DB readiness
-      # Then do a simple connection test before proceeding
-      - name: Verify PostgreSQL connection
+      # Initialize database with Supabase-like schema structure
+      - name: Initialize Supabase-like Database Structure
         run: |
-          echo "Testing PostgreSQL connection..."
-          PGPASSWORD=testpassword psql -h localhost -p 5432 -U testuser -d testdb -c '\l'
-          echo "PostgreSQL connection successful!"
+          PGPASSWORD=testpassword psql -h localhost -p 5432 -U testuser -d testdb << EOF
+          -- Create essential Supabase schemas
+          CREATE SCHEMA IF NOT EXISTS auth;
+          CREATE SCHEMA IF NOT EXISTS storage;
+          CREATE SCHEMA IF NOT EXISTS extensions;
+          
+          -- Create basic auth.users table structure (simplified version)
+          CREATE TABLE IF NOT EXISTS auth.users (
+            id uuid PRIMARY KEY,
+            email text UNIQUE,
+            encrypted_password text,
+            created_at timestamp with time zone DEFAULT now(),
+            updated_at timestamp with time zone DEFAULT now()
+          );
+          
+          -- Set proper permissions
+          GRANT USAGE ON SCHEMA auth TO testuser;
+          GRANT ALL ON ALL TABLES IN SCHEMA auth TO testuser;
+          GRANT USAGE ON SCHEMA storage TO testuser;
+          GRANT ALL ON ALL TABLES IN SCHEMA storage TO testuser;
+          GRANT USAGE ON SCHEMA extensions TO testuser;
+          
+          -- Add additional extensions if needed
+          -- CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
+          
+          COMMIT;
+          EOF
+          
+          echo "Supabase-like database structure initialization complete."
       
       - name: Build and Test with Maven
         run: |
