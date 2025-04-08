@@ -30,13 +30,37 @@ jobs:
             cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application.properties
           fi
       
-      - name: Inject Secrets into Configuration
+      - name: Inject Supabase Database Credentials
         run: |
           sed -i "s|\${SUPABASE_USERNAME}|${{ secrets.SUPABASE_USERNAME }}|g" src/main/resources/application.properties
           sed -i "s|\${SUPABASE_PASSWORD}|${{ secrets.SUPABASE_PASSWORD }}|g" src/main/resources/application.properties
           sed -i "s|\${JWT_SECRET}|${{ secrets.JWT_SECRET }}|g" src/main/resources/application.properties
           sed -i "s|\${SUPABASE_DB_URL}|${{ secrets.SUPABASE_DB_URL }}|g" src/main/resources/application.properties
       
+      # Set up test environment with Supabase extensions and auth.uid() mock function
+      - name: Set Up Test Environment
+        run: |
+          # Create a script to initialize test environment
+          cat > setup-test-db.sql << EOF
+          -- Create auth schema if it doesn't exist
+          CREATE SCHEMA IF NOT EXISTS auth;
+          
+          -- Create a mock auth.uid() function that returns a default test user ID
+          CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid AS $
+              BEGIN
+                  RETURN '00000000-0000-0000-0000-000000000000'::uuid;
+              END;
+          $ LANGUAGE plpgsql;
+          EOF
+          
+          # Execute the script against your test database
+          PGPASSWORD=${{ secrets.SUPABASE_PASSWORD }} psql -h $(echo ${{ secrets.SUPABASE_DB_URL }} | sed 's|jdbc:postgresql://\([^:]*\):.*|\1|') \
+                                                        -p $(echo ${{ secrets.SUPABASE_DB_URL }} | sed 's|.*:\([0-9]*\)/.*|\1|') \
+                                                        -U ${{ secrets.SUPABASE_USERNAME }} \
+                                                        -d $(echo ${{ secrets.SUPABASE_DB_URL }} | sed 's|.*/\(.*\)|\1|') \
+                                                        -f setup-test-db.sql
+      
+      # Run tests with the mocked auth.uid() function
       - name: Build and Test with Maven
         run: |
           mvn clean verify
