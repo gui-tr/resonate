@@ -39,7 +39,11 @@ public class TrackResource {
 
     @POST
     @Transactional
-    @Operation(summary = "Create track", description = "Creates a new track for a given release. The release must belong to the authenticated artist. Optionally, an audioFileId can be provided to link the track to an audio file.")
+    @Operation(
+            summary = "Create track",
+            description = "Creates a new track for a given release. " +
+                    "The release must belong to the authenticated artist."
+    )
     @APIResponse(responseCode = "201", description = "Track created successfully")
     @APIResponse(responseCode = "404", description = "Release or Audio File not found")
     @APIResponse(responseCode = "403", description = "Not authorized to add track to this release")
@@ -87,7 +91,7 @@ public class TrackResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    @Operation(summary = "Update track", description = "Updates an existing track for the authenticated artist. Optionally, the track can be re-linked to a different audio file.")
+    @Operation(summary = "Update track", description = "Updates an existing track for the authenticated artist.")
     @APIResponse(responseCode = "200", description = "Track updated successfully")
     @APIResponse(responseCode = "403", description = "Not authorized to update this track")
     @APIResponse(responseCode = "404", description = "Track not found")
@@ -141,4 +145,5 @@ public class TrackResource {
         trackRepository.delete(track);
         return Response.noContent().build();
     }
+
 }

@@ -1,159 +1,116 @@
 package com.resonate.api;
 
-import io.quarkus.security.UnauthorizedException;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import com.resonate.auth.SupabaseAuthService;
+import com.resonate.auth.SupabaseAuthService.AuthResult;
 import com.resonate.domain.model.ArtistProfile;
 import com.resonate.domain.model.FanProfile;
-import com.resonate.infrastructure.repository.ArtistProfileRepository;
-import com.resonate.infrastructure.repository.FanProfileRepository;
-import com.resonate.auth.SupabaseAuthService;
-import io.smallrye.jwt.build.Jwt;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.UUID;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Path("/api/auth")
-@Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
 
     @Inject
-    ArtistProfileRepository artistProfileRepository;
+    SupabaseAuthService authService;
 
     @Inject
-    FanProfileRepository fanProfileRepository;
+    EntityManager em;
 
-    @Inject
-    SupabaseAuthService supabaseAuthService;
-
-    @ConfigProperty(name = "mp.jwt.verify.issuer")
-    String issuer;
-
+    /**
+     * Registers a new user.
+     * Based on the 'userType' field, it creates either an artist profile or a fan profile.
+     */
     @POST
     @Path("/register")
     @Transactional
     public Response register(RegisterRequest request) {
         try {
-            // Validate request
-            if (request == null || request.email == null || request.password == null || request.userType == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Email, password and userType are required")
-                        .build();
-            }
+            // Call Supabase to register the user and get back the userId and token
+            AuthResult authResult = authService.signUp(request.email, request.password);
+            UUID userId = authResult.userId;
+            String token = authResult.token;
 
-            // Register with Supabase Auth
-            UUID userId = supabaseAuthService.signUp(request.email, request.password);
-
-            // Create profile based on user type
-            if ("artist".equals(request.userType)) {
-                ArtistProfile artistProfile = ArtistProfile.builder()
+            // Save the corresponding local profile based on the user type
+            if ("artist".equalsIgnoreCase(request.userType)) {
+                ArtistProfile profile = ArtistProfile.builder()
                         .userId(userId)
                         .biography(request.bio)
-                        .socialLinks("{}")
                         .build();
-                artistProfileRepository.persist(artistProfile);
-            } else {
-                FanProfile fanProfile = FanProfile.builder()
+                em.persist(profile);
+            } else if ("fan".equalsIgnoreCase(request.userType)) {
+                FanProfile profile = FanProfile.builder()
                         .userId(userId)
                         .subscriptionActive(false)
                         .build();
-                fanProfileRepository.persist(fanProfile);
+                em.persist(profile);
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(Map.of("message", "Invalid user type"))
+                        .build();
             }
 
-            // Generate JWT token
-            String token = generateToken(userId.toString(), request.userType);
-
+            // Build the response data
             Map<String, Object> result = new HashMap<>();
-            result.put("userId", userId.toString());
+            result.put("userId", userId);
             result.put("token", token);
             result.put("userType", request.userType);
 
             return Response.status(Response.Status.CREATED).entity(result).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Registration failed: " + e.getMessage())
+                    .entity(Map.of("message", e.getMessage()))
                     .build();
         }
     }
 
+    /**
+     * Authenticates a user.
+     */
     @POST
     @Path("/login")
     public Response login(LoginRequest request) {
         try {
-            // Validate request
-            if (request == null || request.email == null || request.password == null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Email and password are required")
-                        .build();
-            }
-
-            // Authenticate with Supabase
-            UUID userId = supabaseAuthService.signIn(request.email, request.password);
-            if (userId == null) {
-                throw new UnauthorizedException("Invalid credentials");
-            }
-
-            // Determine user type by checking if profiles exist
-            String userType = "fan"; // default
-            if (artistProfileRepository.findByUserId(userId) != null) {
-                userType = "artist";
-            }
-
-            // Generate JWT token
-            String token = generateToken(userId.toString(), userType);
-
+            AuthResult authResult = authService.signIn(request.email, request.password);
             Map<String, Object> result = new HashMap<>();
-            result.put("userId", userId.toString());
-            result.put("token", token);
-            result.put("userType", userType);
-
+            result.put("userId", authResult.userId);
+            result.put("token", authResult.token);
             return Response.ok(result).build();
-        } catch (UnauthorizedException e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Authentication failed: " + e.getMessage())
-                    .build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("An error occurred: " + e.getMessage())
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("message", e.getMessage()))
                     .build();
         }
     }
 
+    /**
+     * Logs the user out.
+     * (Note: In JWT-based systems, logout is typically a client-side operation.)
+     */
     @POST
     @Path("/logout")
     public Response logout() {
-        try {
-            // No server-side state to clear with JWT
-            return Response.ok().entity(Map.of("message", "Logged out successfully")).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("Logout failed: " + e.getMessage())
-                    .build();
-        }
+        return Response.ok(Map.of("message", "Logged out successfully")).build();
     }
 
-    private String generateToken(String subject, String userType) {
-        return Jwt.issuer(issuer)
-                .subject(subject)
-                .groups(new HashSet<>(Arrays.asList("user", userType)))
-                .expiresIn(Duration.ofHours(24))
-                .sign();
-    }
-
+    // Request DTOs
     public static class RegisterRequest {
         public String email;
         public String password;
-        public String userType; // "artist" or "fan"
-        public String bio; // for artists
+        public String userType; // e.g., "artist" or "fan"
+        public String bio;      // Only applicable for artist registrations (optional for fan)
     }
 
     public static class LoginRequest {

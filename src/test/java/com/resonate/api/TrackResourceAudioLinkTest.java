@@ -8,6 +8,7 @@ import com.resonate.infrastructure.repository.ArtistProfileRepository;
 import com.resonate.infrastructure.repository.ReleaseRepository;
 import com.resonate.infrastructure.repository.TrackRepository;
 import com.resonate.infrastructure.repository.AudioFileRepository;
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -29,8 +30,8 @@ public class TrackResourceAudioLinkTest {
     private final String releaseBasePath = "/api/releases";
     private final String trackBasePath = "/api/tracks";
 
-    // Use a constant mock user ID.
-    private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
+    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
+
 
     @Inject
     ArtistProfileRepository artistProfileRepository;
