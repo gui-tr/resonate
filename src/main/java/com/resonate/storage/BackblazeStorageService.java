@@ -39,7 +39,7 @@ public class BackblazeStorageService {
     @ConfigProperty(name = "backblaze.bucketName")
     String bucketName;
 
-    @ConfigProperty(name = "backblaze.endpoint", defaultValue = "https://s3.us-west-001.backblazeb2.com")
+    @ConfigProperty(name = "backblaze.endpoint", defaultValue = "https://s3.eu-central-003.backblazeb2.com")
     String endpoint;
 
 
