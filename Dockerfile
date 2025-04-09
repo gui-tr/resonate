@@ -13,23 +13,14 @@ COPY src src
 # Make the Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Build the native executable with increased memory allocation
-RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=true \
-    -Dquarkus.native.native-image-xmx=4g \
-    -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1-java21
+# Build a JVM-mode executable first to verify everything compiles
+RUN ./mvnw package -DskipTests
 
-# Create a minimal runtime image
-FROM quay.io/quarkus/quarkus-micro-image:2.0
-WORKDIR /work/
-
-# Copy the native executable
-COPY --from=build /app/target/*-runner /work/application
-
-# Configure permissions
-RUN chmod 775 /work /work/application
-
+# Create a minimal JVM-mode runtime image as a fallback
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.21 AS jvm-build
+COPY --from=build /app/target/quarkus-app /deployments
 EXPOSE 8080
-USER quarkus
-
-# Use the PORT environment variable from Render
-CMD ./application -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=${PORT:-8080}
+USER 185
+ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
