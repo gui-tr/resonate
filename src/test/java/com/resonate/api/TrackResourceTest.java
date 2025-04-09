@@ -192,13 +192,13 @@ public class TrackResourceTest {
                 .when()
                 .delete(basePath + "/" + trackId)
                 .then()
-                .statusCode(200);
+                .statusCode(204);
 
         // Verify deletion
         given()
                 .when()
                 .get(basePath + "/" + trackId)
                 .then()
-                .statusCode(200);
+                .statusCode(404);
     }
 }
