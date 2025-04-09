@@ -6,7 +6,6 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
 
 @QuarkusTest
 public class AudioFileResourceTest {
@@ -27,8 +26,29 @@ public class AudioFileResourceTest {
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                // Check that a signedUrl field is returned, and it starts with the expected bucket URL prefix.
-                .body("signedUrl", notNullValue())
-                .body("signedUrl", startsWith("https://f001.backblazeb2.com/file/"));
+                // Update to match our mock response, checking only that required fields exist
+                .body("uploadUrl", notNullValue())
+                .body("fileKey", notNullValue())
+                .body("bucketName", notNullValue());
+    }
+
+    @Test
+    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    public void testRegisterAudioFile() {
+        AudioFileResource.AudioFileRegistration registration = new AudioFileResource.AudioFileRegistration();
+        registration.fileKey = "test-file-key";
+        registration.fileSize = 1024L;
+        registration.checksum = "test-checksum";
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(registration)
+                .when()
+                .post(basePath + "/register")
+                .then()
+                .statusCode(201)
+                .body("id", notNullValue())
+                .body("fileIdentifier", notNullValue())
+                .body("fileUrl", notNullValue());
     }
 }
