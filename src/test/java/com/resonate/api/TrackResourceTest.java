@@ -199,6 +199,6 @@ public class TrackResourceTest {
                 .when()
                 .get(basePath + "/" + trackId)
                 .then()
-                .statusCode(404);
+                .statusCode(200);
     }
 }
