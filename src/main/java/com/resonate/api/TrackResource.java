@@ -128,7 +128,7 @@ public class TrackResource {
     @Path("/{id}")
     @Transactional
     @Operation(summary = "Delete track", description = "Deletes a track for the authenticated artist")
-    @APIResponse(responseCode = "200", description = "Track deleted successfully")
+    @APIResponse(responseCode = "204", description = "Track deleted successfully")
     @APIResponse(responseCode = "403", description = "Not authorized to delete this track")
     @APIResponse(responseCode = "404", description = "Track not found")
     public Response deleteTrack(@PathParam("id") Long id) {
@@ -143,7 +143,7 @@ public class TrackResource {
                     .entity("Not authorized to delete this track").build();
         }
         trackRepository.delete(track);
-        return Response.ok("Track deleted successfully").build();
+        return Response.noContent().build();
     }
 
 }
