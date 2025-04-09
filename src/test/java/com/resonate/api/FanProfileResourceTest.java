@@ -2,6 +2,7 @@ package com.resonate.api;
 
 import com.resonate.domain.model.FanProfile;
 import com.resonate.infrastructure.repository.FanProfileRepository;
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -19,7 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 public class FanProfileResourceTest {
 
     private final String basePath = "/api/fan-profiles";
-    private static final String MOCK_USER_ID = "22222222-2222-2222-2222-222222222222";
+    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
 
     @Inject
     FanProfileRepository fanProfileRepository;

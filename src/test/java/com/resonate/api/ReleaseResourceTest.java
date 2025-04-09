@@ -7,6 +7,7 @@ import com.resonate.infrastructure.repository.ArtistProfileRepository;
 import com.resonate.infrastructure.repository.ReleaseRepository;
 import com.resonate.infrastructure.repository.TrackRepository;
 import com.resonate.util.TestDataSetup;
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -27,7 +28,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 public class ReleaseResourceTest {
 
     private final String basePath = "/api/releases";
-    private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
+    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
     private UUID userId;
     private Long releaseId;
 
