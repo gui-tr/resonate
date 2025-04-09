@@ -13,10 +13,12 @@ COPY src src
 # Make the Maven wrapper executable
 RUN chmod +x ./mvnw
 
-# Build the native executable with increased memory allocation
+# Build the native executable with increased memory allocation and runtime initialization for SSLConnectionSocketFactory
 RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false \
     -Dquarkus.native.native-image-xmx=4g \
-    -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1-java21
+    -Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1-java21 \
+    -Dquarkus.native.additional-build-args=--initialize-at-run-time=org.apache.http.conn.ssl.SSLConnectionSocketFactory \
+    -Dquarkus.native.debug.enabled=true
 
 # Create a minimal runtime image
 FROM quay.io/quarkus/quarkus-micro-image:2.0
