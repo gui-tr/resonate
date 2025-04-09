@@ -1,5 +1,6 @@
 package com.resonate.api;
 
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -12,10 +13,9 @@ public class AudioFileResourceTest {
 
     private final String basePath = "/api/audio-files";
 
-    private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testGetSignedUploadUrl() {
         String fileName = "test-audio.mp3";
 
@@ -26,14 +26,14 @@ public class AudioFileResourceTest {
                 .then()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                // Update to match our mock response, checking only that required fields exist
+                // Don't test exact URLs, just ensure fields exist
                 .body("uploadUrl", notNullValue())
                 .body("fileKey", notNullValue())
                 .body("bucketName", notNullValue());
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testRegisterAudioFile() {
         AudioFileResource.AudioFileRegistration registration = new AudioFileResource.AudioFileRegistration();
         registration.fileKey = "test-file-key";

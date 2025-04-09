@@ -3,6 +3,7 @@ package com.resonate.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.resonate.domain.model.ArtistProfile;
 import com.resonate.infrastructure.repository.ArtistProfileRepository;
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -21,7 +22,7 @@ public class ArtistProfileResourceTest {
 
     private final String basePath = "/api/artist-profiles";
     private final String socialLinks = "{\"twitter\":\"@artist\"}";
-    private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
+    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
 
     @Inject
     ArtistProfileRepository artistProfileRepository;

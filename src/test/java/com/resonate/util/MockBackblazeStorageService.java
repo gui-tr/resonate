@@ -1,4 +1,3 @@
-
 package com.resonate.util;
 
 import com.resonate.storage.BackblazeStorageService;
@@ -14,7 +13,7 @@ public class MockBackblazeStorageService extends BackblazeStorageService {
     @Override
     public Map<String, String> generateUploadUrl(String fileName, String contentType) {
         Map<String, String> mockResult = new HashMap<>();
-        mockResult.put("uploadUrl", "https://f001.backblazeb2.com/file/test-bucket/" + fileName);
+        mockResult.put("uploadUrl", "https://test-bucket.backblaze.com/file/" + fileName);
         mockResult.put("fileKey", "mock-key-" + fileName);
         mockResult.put("bucketName", "test-bucket");
         return mockResult;
@@ -22,6 +21,6 @@ public class MockBackblazeStorageService extends BackblazeStorageService {
 
     @Override
     public String generateDownloadUrl(String fileKey) {
-        return "https://f001.backblazeb2.com/file/test-bucket/" + fileKey;
+        return "https://test-bucket.backblaze.com/file/" + fileKey;
     }
 }

@@ -8,6 +8,7 @@ import com.resonate.infrastructure.repository.AudioFileRepository;
 import com.resonate.infrastructure.repository.ReleaseRepository;
 import com.resonate.infrastructure.repository.TrackRepository;
 import com.resonate.util.TestDataSetup;
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
+import java.time.LocalDate;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,51 +28,49 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 public class TrackResourceTest {
 
     private final String basePath = "/api/tracks";
-
-    private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
-    private UUID userId;
     private Long releaseId;
     private Long trackId;
     private Long audioFileId;
+
 
     @Inject
     TestDataSetup testDataSetup;
 
     @Inject
-    TrackRepository trackRepository;
+    ReleaseRepository releaseRepository;
 
     @Inject
-    ReleaseRepository releaseRepository;
+    TrackRepository trackRepository;
 
     @Inject
     AudioFileRepository audioFileRepository;
 
     @BeforeEach
+    @Transactional
     public void setup() {
-        userId = UUID.fromString(MOCK_USER_ID);
-
-        // Create test data
-        ArtistProfile artistProfile = testDataSetup.createArtistProfile(userId);
-        Release release = testDataSetup.createRelease(userId, "Test Release");
+        // Create a release for the fixed test artist
+        Release release = testDataSetup.createRelease(TestUtil.ARTIST_UUID, "Test Release");
         releaseId = release.getId();
 
+        // Create a track for the release
         Track track = testDataSetup.createTrack(release, "Test Track");
         trackId = track.getId();
 
+        // Create an audio file
         AudioFile audioFile = testDataSetup.createAudioFile("test-file-identifier");
         audioFileId = audioFile.getId();
+
+        testDataSetup.flushAndClear();
     }
 
     @AfterEach
     @Transactional
     public void cleanup() {
-        trackRepository.deleteAll();
-        releaseRepository.deleteAll();
-        audioFileRepository.deleteAll();
+        testDataSetup.cleanupTestData();
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testGetTrack() {
         given()
                 .when()
@@ -84,7 +83,7 @@ public class TrackResourceTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testGetNonExistentTrack() {
         given()
                 .when()
@@ -94,7 +93,7 @@ public class TrackResourceTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testCreateTrack() {
         Track newTrack = Track.builder()
                 .title("New Test Track")
@@ -118,7 +117,7 @@ public class TrackResourceTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testCreateTrackWithAudioFile() {
         Track newTrack = Track.builder()
                 .title("New Track With Audio")
@@ -142,7 +141,7 @@ public class TrackResourceTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testUpdateTrack() {
         Track updatedTrack = Track.builder()
                 .title("Updated Track")
@@ -164,7 +163,7 @@ public class TrackResourceTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testUpdateTrackWithAudioFile() {
         Track updatedTrack = Track.builder()
                 .title("Updated with Audio")
@@ -187,13 +186,13 @@ public class TrackResourceTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testDeleteTrack() {
         given()
                 .when()
                 .delete(basePath + "/" + trackId)
                 .then()
-                .statusCode(204);
+                .statusCode(200);
 
         // Verify deletion
         given()

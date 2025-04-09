@@ -6,6 +6,7 @@ import com.resonate.domain.model.Track;
 import com.resonate.infrastructure.repository.ArtistProfileRepository;
 import com.resonate.infrastructure.repository.ReleaseRepository;
 import com.resonate.infrastructure.repository.TrackRepository;
+import com.resonate.util.TestUtil;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
@@ -27,7 +28,8 @@ public class ArtistCatalogueTest {
     private final String artistProfilePath = "/api/artist-profiles";
     private final String releasePath = "/api/releases";
     private final String trackPath = "/api/tracks";
-    private static final String MOCK_USER_ID = "11111111-1111-1111-1111-111111111111";
+    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
+
 
     @Inject
     EntityManager entityManager;
