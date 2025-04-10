@@ -14,9 +14,16 @@ COPY src src
 RUN chmod +x ./mvnw
 
 # Build the native executable with increased memory allocation (local build)
-RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=true \
-    -Dquarkus.native.native-image-xmx=4g \
-    -Dquarkus.native.additional-build-args=--initialize-at-run-time=org.apache.http.conn.ssl.SSLConnectionSocketFactory
+# RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=true \
+#     -Dquarkus.native.native-image-xmx=4g \
+#     -Dquarkus.native.additional-build-args=--initialize-at-run-time=org.apache.http.conn.ssl.SSLConnectionSocketFactory
+
+RUN chmod +x ./mvnw && \
+    echo "Starting native build with container build mode enabled..." && \
+    ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false \
+        -Dquarkus.native.native-image-xmx=4g \
+        -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.http.conn.ssl.SSLConnectionSocketFactory" && \
+    echo "Native build completed successfully!"
 
 # Create a minimal runtime image
 FROM quay.io/quarkus/quarkus-micro-image:2.0
