@@ -15,6 +15,10 @@
         <quarkus.platform.version>3.19.3</quarkus.platform.version>
         <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.2</surefire-plugin.version>
+        <quarkus.native.additional-build-args>
+            --initialize-at-run-time=org.apache.http.impl.auth.NTLMEngineImpl,org.apache.http.conn.ssl.SSLConnectionSocketFactory
+        </quarkus.native.additional-build-args>
+    
     </properties>
 
     <dependencyManagement>
@@ -73,6 +77,11 @@
         </dependency>
 
         <dependency>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-apache-httpclient</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-flyway</artifactId>
         </dependency>
@@ -84,30 +93,10 @@
         </dependency>
 
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <version>2.31.17</version>
-            <scope>compile</scope>
+          <groupId>io.quarkiverse.amazonservices</groupId>
+          <artifactId>quarkus-amazon-s3</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3-transfer-manager</artifactId>
-            <version>2.31.17</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <version>5.4.3</version>
-        </dependency>
-
-        <!--secrets-->
-<!--        <dependency>-->
-<!--            <groupId>io.quarkiverse.vault</groupId>-->
-<!--            <artifactId>quarkus-vault</artifactId>-->
-<!--            <version>4.2.1</version>-->
-<!--        </dependency>-->
 
         <!--test-->
         <dependency>
