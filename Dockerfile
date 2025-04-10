@@ -14,7 +14,7 @@ COPY src src
 RUN chmod +x ./mvnw
 
 # Build the native executable with increased memory allocation (local build)
-RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=false \
+RUN ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=true \
     -Dquarkus.native.native-image-xmx=4g \
     -Dquarkus.native.additional-build-args=--initialize-at-run-time=org.apache.http.conn.ssl.SSLConnectionSocketFactory
 
