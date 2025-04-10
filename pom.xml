@@ -98,6 +98,11 @@
           <version>3.4.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.backblaze.b2</groupId>
+            <artifactId>b2-sdk-httpclient</artifactId>
+            <version>6.3.0</version>
+        </dependency>
 
         <!--test-->
         <dependency>
