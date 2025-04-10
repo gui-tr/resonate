@@ -1,35 +1,29 @@
-# Stage 1: Build the native executable using the Quarkus native image builder (Java 21)
-FROM quay.io/quarkus/ubi-quarkus-native-image:23.0-java21 AS build
-WORKDIR /project
+# Stage 1: Build the application using Maven with Java 21
+FROM maven:3.9.0-eclipse-temurin-21 AS build
+WORKDIR /build
 
-# Copy Maven configuration and wrapper to leverage Docker caching
+# Copy the Maven configuration first to leverage caching
 COPY pom.xml .
-COPY mvnw .
 COPY .mvn/ .mvn/
+COPY mvnw .
+RUN chmod +x mvnw
 
-# Copy application source code
+# Download Maven dependencies
+RUN ./mvnw dependency:resolve
+
+# Copy source files and build the application (skip tests)
 COPY src/ src/
+RUN ./mvnw package -DskipTests
 
-# Ensure the Maven wrapper is executable, then build the native executable in container mode
-RUN chmod +x ./mvnw && \
-    echo "Starting native build with container build mode enabled (Java 21)..." && \
-    ./mvnw package -Dnative -DskipTests -Dquarkus.native.container-build=true \
-        -Dquarkus.native.native-image-xmx=4g \
-        -Dquarkus.native.additional-build-args="--initialize-at-run-time=org.apache.http.conn.ssl.SSLConnectionSocketFactory" && \
-    echo "Native build completed successfully!"
+# Stage 2: Create the runtime image using a minimal Java 21 runtime
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
 
-# Stage 2: Create the runtime image
-FROM registry.access.redhat.com/ubi8/ubi-minimal AS run
-WORKDIR /work/
+# Copy the built JAR (adjust the pattern if your artifact name differs)
+COPY --from=build /build/target/*-runner.jar app.jar
 
-# Copy the native executable from the build stage (adjust pattern if needed)
-COPY --from=build /project/target/*-runner /work/application
-
-# Ensure the application is executable
-RUN chmod +x /work/application
-
-# Expose the port used by your application (modify as required)
+# Expose the application port (change if necessary)
 EXPOSE 8080
 
-# Run the native executable when the container starts
-CMD ["./application"]
+# Run the application
+CMD ["java", "-jar", "app.jar"]
