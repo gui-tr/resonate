@@ -40,7 +40,7 @@ public class SupabaseAuthService {
      *
      * @param email    the user's email.
      * @param password the user's password.
-     * @return an AuthResult containing the Supabase user ID and access token.
+     * @return an AuthResult containing the Supabase user ID and access token, or null if email confirmation is required.
      * @throws Exception if registration fails.
      */
     public AuthResult signUp(String email, String password) throws Exception {
@@ -80,6 +80,13 @@ public class SupabaseAuthService {
 
         try {
             Map<String, Object> responseBody = objectMapper.readValue(response.body(), Map.class);
+            
+            // Check if response indicates email confirmation is required
+            if (responseBody.containsKey("confirmation_sent_at") || responseBody.containsKey("email_confirmed_at") == false) {
+                LOG.info("Email confirmation sent to user. Registration pending email verification.");
+                return null; // Return null to indicate email confirmation is pending
+            }
+            
             Map<String, Object> user = (Map<String, Object>) responseBody.get("user");
             if (user == null || user.get("id") == null) {
                 LOG.error("Failed to extract user ID from response: " + response.body());
@@ -154,6 +161,44 @@ public class SupabaseAuthService {
             LOG.error("Error processing signin response: " + e.getMessage(), e);
             throw new Exception("Error processing signin response: " + e.getMessage());
         }
+    }
+
+    /**
+     * Deletes a user from Supabase Auth.
+     *
+     * @param userId The UUID of the user to delete.
+     * @param token  Admin JWT token or user's own token.
+     * @throws Exception if deletion fails.
+     */
+    public void deleteUser(UUID userId, String token) throws Exception {
+        LOG.info("Attempting to delete user with ID: " + userId);
+        
+        // Supabase requires a specific format for user deletion
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(supabaseUrl + "/auth/v1/admin/users/" + userId))
+            .header("apikey", supabaseApiKey)
+            .header("Authorization", "Bearer " + token)
+            .header("Content-Type", MediaType.APPLICATION_JSON)
+            .DELETE()
+            .build();
+            
+        LOG.debug("Sending delete request to: " + supabaseUrl + "/auth/v1/admin/users/" + userId);
+        
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        LOG.info("Delete user response status: " + response.statusCode());
+        
+        if (response.statusCode() != 200 && response.statusCode() != 204) {
+            LOG.error("Failed to delete user: " + response.body());
+            try {
+                Map<String, Object> errorResponse = objectMapper.readValue(response.body(), Map.class);
+                String errorMessage = errorResponse.getOrDefault("message", "User deletion failed").toString();
+                throw new Exception(errorMessage);
+            } catch (Exception e) {
+                throw new Exception("Failed to delete user: " + response.body());
+            }
+        }
+        
+        LOG.info("Successfully deleted user with ID: " + userId);
     }
 
     public static class AuthResult {
