@@ -61,7 +61,6 @@ public class TrackResourceAudioLinkTest {
         // 0. Create an ArtistProfile to satisfy the foreign key constraint on releases.
         ArtistProfile artistProfile = ArtistProfile.builder()
                 .biography("Test Artist")
-                .socialLinks("{\"twitter\":\"@artist\"}")
                 .build();
 
         given()
@@ -102,9 +101,6 @@ public class TrackResourceAudioLinkTest {
         Track track = Track.builder()
                 .title("Track with Audio Link")
                 .duration(180)
-                .isrc("AUDIOISRC")
-                .filePath("unused-for-now")
-                .fileSize(0L)
                 .build();
 
         int trackId = given()

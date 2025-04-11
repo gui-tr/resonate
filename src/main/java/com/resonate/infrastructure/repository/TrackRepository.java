@@ -6,5 +6,4 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class TrackRepository implements PanacheRepository<Track> {
-    // Add additional domain-specific queries here
 }

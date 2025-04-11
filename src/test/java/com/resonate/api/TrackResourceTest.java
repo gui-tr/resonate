@@ -98,9 +98,6 @@ public class TrackResourceTest {
         Track newTrack = Track.builder()
                 .title("New Test Track")
                 .duration(240)
-                .isrc("NEWTEST123")
-                .filePath("/new/test/path.mp3")
-                .fileSize(2048L)
                 .build();
 
         given()
@@ -122,9 +119,6 @@ public class TrackResourceTest {
         Track newTrack = Track.builder()
                 .title("New Track With Audio")
                 .duration(300)
-                .isrc("AUDIO123")
-                .filePath("/audio/path.mp3")
-                .fileSize(3072L)
                 .build();
 
         given()
@@ -146,9 +140,6 @@ public class TrackResourceTest {
         Track updatedTrack = Track.builder()
                 .title("Updated Track")
                 .duration(360)
-                .isrc("UPDATED123")
-                .filePath("/updated/path.mp3")
-                .fileSize(4096L)
                 .build();
 
         given()
@@ -168,9 +159,6 @@ public class TrackResourceTest {
         Track updatedTrack = Track.builder()
                 .title("Updated with Audio")
                 .duration(420)
-                .isrc("UPDATEAUDIO123")
-                .filePath("/updated/audio/path.mp3")
-                .fileSize(5120L)
                 .build();
 
         given()

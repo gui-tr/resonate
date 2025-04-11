@@ -50,7 +50,6 @@ public class ArtistProfileResourceTest {
 
         ArtistProfile profile = ArtistProfile.builder()
                 .biography("Test bio")
-                .socialLinks(socialLinks)
                 .build();
 
         // Create profile
@@ -76,7 +75,6 @@ public class ArtistProfileResourceTest {
 
         ArtistProfile profile = ArtistProfile.builder()
                 .biography("Test delete")
-                .socialLinks(socialLinks)
                 .build();
 
         // Create profile

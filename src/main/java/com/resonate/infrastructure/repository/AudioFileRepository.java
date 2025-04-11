@@ -6,5 +6,4 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class AudioFileRepository implements PanacheRepository<AudioFile> {
-    // PanacheRepository provides built-in CRUD operations.
 }

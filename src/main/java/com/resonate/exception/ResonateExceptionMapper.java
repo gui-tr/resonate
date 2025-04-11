@@ -1,24 +1,28 @@
 package com.resonate.exception;
 
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.HashMap;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Provider
 public class ResonateExceptionMapper implements ExceptionMapper<ResonateException> {
 
-    @Override
-    public Response toResponse(ResonateException ex) {
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("error", ex.getMessage());
-        errorResponse.put("code", ex.getErrorCode());
+    private static final Logger logger = LoggerFactory.getLogger(ResonateExceptionMapper.class);
 
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(errorResponse)
-                .type(MediaType.APPLICATION_JSON)
+    @Override
+    public Response toResponse(ResonateException exception) {
+        logger.error("Exception caught: {}", exception.getMessage(), exception);
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity(new ErrorResponse(exception.getMessage()))
                 .build();
+    }
+
+    public static class ErrorResponse {
+        public String message;
+        public ErrorResponse(String message) {
+            this.message = message;
+        }
     }
 }

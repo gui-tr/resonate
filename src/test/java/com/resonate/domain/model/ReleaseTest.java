@@ -37,7 +37,6 @@ class ReleaseTest {
                 .artistId(mockArtistId)
                 .releaseDate(releaseDate)
                 .upc(upc)
-                .tracks(tracks)
                 .build();
 
         assertNotNull(release);
@@ -45,8 +44,6 @@ class ReleaseTest {
         assertEquals(mockArtistId, release.getArtistId());
         assertEquals(releaseDate, release.getReleaseDate());
         assertEquals(upc, release.getUpc());
-        assertEquals(tracks, release.getTracks());
-        assertNotNull(release.getCreatedAt());
     }
 
     @Test
@@ -58,9 +55,7 @@ class ReleaseTest {
         assertNull(release.getArtistId());
         assertNull(release.getReleaseDate());
         assertNull(release.getUpc());
-        assertNotNull(release.getTracks());
-        assertTrue(release.getTracks().isEmpty());
-        assertNotNull(release.getCreatedAt());
+
     }
 
     @Test
@@ -72,7 +67,7 @@ class ReleaseTest {
         List<Track> tracks = Arrays.asList(mockTrack1, mockTrack2);
         OffsetDateTime createdAt = OffsetDateTime.now();
 
-        Release release = new Release(id, mockArtistId, title, releaseDate, upc, createdAt, tracks);
+        Release release = new Release(id, title, releaseDate,upc, mockArtistId);
 
         assertNotNull(release);
         assertEquals(id, release.getId());
@@ -80,21 +75,8 @@ class ReleaseTest {
         assertEquals(mockArtistId, release.getArtistId());
         assertEquals(releaseDate, release.getReleaseDate());
         assertEquals(upc, release.getUpc());
-        assertEquals(tracks, release.getTracks());
-        assertEquals(createdAt, release.getCreatedAt());
     }
 
-    @Test
-    void testDefaultCreatedAtValue() {
-        Release release = Release.builder()
-                .title("Test Release")
-                .artistId(mockArtistId)
-                .releaseDate(LocalDate.now())
-                .build();
-
-        assertNotNull(release.getCreatedAt());
-        assertTrue(release.getCreatedAt().isBefore(OffsetDateTime.now().plusSeconds(1)));
-    }
 
     @Test
     void testReleaseSettersAndGetters() {
@@ -110,30 +92,13 @@ class ReleaseTest {
         release.setArtistId(newArtistId);
         release.setReleaseDate(newReleaseDate);
         release.setUpc(newUpc);
-        release.setTracks(newTracks);
-        release.setCreatedAt(now);
+
 
         assertEquals(newTitle, release.getTitle());
         assertEquals(newArtistId, release.getArtistId());
         assertEquals(newReleaseDate, release.getReleaseDate());
         assertEquals(newUpc, release.getUpc());
-        assertEquals(newTracks, release.getTracks());
-        assertEquals(now, release.getCreatedAt());
+
     }
 
-    @Test
-    void testTrackListModification() {
-        Release release = Release.builder()
-                .title("Test Release")
-                .artistId(mockArtistId)
-                .releaseDate(LocalDate.now())
-                .build();
-
-        release.getTracks().add(mockTrack1);
-        release.getTracks().add(mockTrack2);
-
-        assertEquals(2, release.getTracks().size());
-        assertTrue(release.getTracks().contains(mockTrack1));
-        assertTrue(release.getTracks().contains(mockTrack2));
-    }
 } 

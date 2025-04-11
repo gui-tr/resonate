@@ -31,22 +31,15 @@ class TrackTest {
         Track track = Track.builder()
                 .title(title)
                 .duration(duration)
-                .isrc(isrc)
-                .filePath(filePath)
-                .fileSize(fileSize)
                 .release(mockRelease)
-                .audioFile(mockAudioFile)
                 .build();
 
         assertNotNull(track);
         assertEquals(title, track.getTitle());
         assertEquals(duration, track.getDuration());
-        assertEquals(isrc, track.getIsrc());
-        assertEquals(filePath, track.getFilePath());
-        assertEquals(fileSize, track.getFileSize());
+
         assertEquals(mockRelease, track.getRelease());
-        assertEquals(mockAudioFile, track.getAudioFile());
-        assertNotNull(track.getCreatedAt());
+
     }
 
     @Test
@@ -56,12 +49,9 @@ class TrackTest {
         assertNotNull(track);
         assertNull(track.getTitle());
         assertEquals(0, track.getDuration());
-        assertNull(track.getIsrc());
-        assertNull(track.getFilePath());
-        assertNull(track.getFileSize());
+
         assertNull(track.getRelease());
-        assertNull(track.getAudioFile());
-        assertNotNull(track.getCreatedAt());
+
     }
 
     @Test
@@ -74,31 +64,13 @@ class TrackTest {
         Long fileSize = 1024L;
         OffsetDateTime createdAt = OffsetDateTime.now();
 
-        Track track = new Track(id, mockRelease, title, duration, isrc, filePath, fileSize, mockAudioFile, createdAt);
+        Track track = new Track(id, title, duration, mockRelease);
 
         assertNotNull(track);
         assertEquals(id, track.getId());
         assertEquals(title, track.getTitle());
         assertEquals(duration, track.getDuration());
-        assertEquals(isrc, track.getIsrc());
-        assertEquals(filePath, track.getFilePath());
-        assertEquals(fileSize, track.getFileSize());
-        assertEquals(mockRelease, track.getRelease());
-        assertEquals(mockAudioFile, track.getAudioFile());
-        assertEquals(createdAt, track.getCreatedAt());
-    }
 
-    @Test
-    void testDefaultCreatedAtValue() {
-        Track track = Track.builder()
-                .title("Test Track")
-                .duration(180)
-                .filePath("/path/to/track.mp3")
-                .release(mockRelease)
-                .build();
-
-        assertNotNull(track.getCreatedAt());
-        assertTrue(track.getCreatedAt().isBefore(OffsetDateTime.now().plusSeconds(1)));
     }
 
     @Test
@@ -107,21 +79,14 @@ class TrackTest {
 
         track.setTitle("New Title");
         track.setDuration(200);
-        track.setIsrc("US-123-45-67891");
-        track.setFilePath("/new/path.mp3");
-        track.setFileSize(2048L);
+
         track.setRelease(mockRelease);
-        track.setAudioFile(mockAudioFile);
         OffsetDateTime now = OffsetDateTime.now();
-        track.setCreatedAt(now);
 
         assertEquals("New Title", track.getTitle());
         assertEquals(200, track.getDuration());
-        assertEquals("US-123-45-67891", track.getIsrc());
-        assertEquals("/new/path.mp3", track.getFilePath());
-        assertEquals(2048L, track.getFileSize());
+
         assertEquals(mockRelease, track.getRelease());
-        assertEquals(mockAudioFile, track.getAudioFile());
-        assertEquals(now, track.getCreatedAt());
+
     }
 } 

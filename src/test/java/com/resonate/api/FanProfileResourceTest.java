@@ -45,7 +45,6 @@ public class FanProfileResourceTest {
     public void testCreateAndGetFanProfile() {
         FanProfile profile = FanProfile.builder()
                 .subscriptionActive(true)
-                .subscriptionStartDate(OffsetDateTime.now())
                 .build();
 
         // Create (or update) profile via POST (upsert behavior)
@@ -70,7 +69,6 @@ public class FanProfileResourceTest {
     public void testDeleteFanProfile() {
         FanProfile profile = FanProfile.builder()
                 .subscriptionActive(true)
-                .subscriptionStartDate(OffsetDateTime.now())
                 .build();
 
         // Create profile

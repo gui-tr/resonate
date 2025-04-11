@@ -64,7 +64,6 @@ public class TestDataSetup {
         ArtistProfile profile = ArtistProfile.builder()
                 .userId(userId)
                 .biography("Test Artist Biography")
-                .socialLinks("{\"twitter\":\"@testartist\"}")
                 .build();
 
         entityManager.persist(profile);
@@ -95,7 +94,6 @@ public class TestDataSetup {
         FanProfile profile = FanProfile.builder()
                 .userId(userId)
                 .subscriptionActive(true)
-                .subscriptionStartDate(OffsetDateTime.now())
                 .build();
 
         entityManager.persist(profile);
@@ -123,9 +121,6 @@ public class TestDataSetup {
                 .release(release)
                 .title(title)
                 .duration(180)
-                .isrc("TEST123456789")
-                .filePath("/test/path.mp3")
-                .fileSize(1024L)
                 .build();
 
         entityManager.persist(track);
@@ -147,12 +142,6 @@ public class TestDataSetup {
         return audioFile;
     }
 
-    @Transactional
-    public void linkTrackToAudioFile(Track track, AudioFile audioFile) {
-        track.setAudioFile(audioFile);
-        entityManager.merge(track);
-        entityManager.flush();
-    }
 
     /**
      * Clean up all test data while preserving fixed test entities

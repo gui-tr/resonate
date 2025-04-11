@@ -53,35 +53,26 @@ jobs:
       # Set up test environment with Supabase extensions and auth.uid() mock function
       - name: Set Up Test Environment
         run: |
-          # Create a script to initialize test environment
           cat > setup-test-db.sql << EOF
-          -- Create auth schema if it doesn't exist
           CREATE SCHEMA IF NOT EXISTS auth;
-          
-          -- Create a mock auth.uid() function that returns a default test user ID
           CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid AS \$\$
               BEGIN
                   RETURN '00000000-0000-0000-0000-000000000000'::uuid;
               END;
           \$\$ LANGUAGE plpgsql;
           EOF
-          
-          # Execute the script against your test database
           PGPASSWORD=${{ secrets.SUPABASE_PASSWORD }} psql -h $(echo ${{ secrets.SUPABASE_DB_URL }} | sed 's|jdbc:postgresql://\([^:]*\):.*|\1|') \
                                                         -p $(echo ${{ secrets.SUPABASE_DB_URL }} | sed 's|.*:\([0-9]*\)/.*|\1|') \
                                                         -U ${{ secrets.SUPABASE_USERNAME }} \
                                                         -d $(echo ${{ secrets.SUPABASE_DB_URL }} | sed 's|.*/\(.*\)|\1|') \
                                                         -f setup-test-db.sql
 
-      # Run tests with the mocked auth.uid() function
       - name: Build and Test with Maven
-        run: |
-          mvn clean verify
+        run: mvn clean verify
 
       - name: Generate Code Coverage Report
         run: mvn jacoco:report
 
-      # Run SonarCloud Analysis
       - name: Run SonarCloud Analysis
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -92,7 +83,6 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
 
-      # Run Vulnerability Analysis (if plugin is configured)
       - name: Run Vulnerability Analysis
         run: |
           if grep -q "org.owasp:dependency-check-maven" pom.xml; then
@@ -102,8 +92,7 @@ jobs:
           fi
 
       - name: Package Application
-        run: |
-          mvn package -Dquarkus.profile=dev
+        run: mvn package -Dquarkus.profile=dev
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

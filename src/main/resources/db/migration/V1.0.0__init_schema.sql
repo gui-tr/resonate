@@ -1,43 +1,42 @@
--- Initial schema
+-- V1.0.0__init_schema.sql
 
-CREATE TABLE artist_profiles (
-    user_id UUID PRIMARY KEY,
-    biography TEXT,
-    social_links TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- Create table for artist profiles with an auto-generated primary key "id"
+CREATE TABLE IF NOT EXISTS artist_profiles (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL UNIQUE,
+    biography TEXT
 );
 
-CREATE TABLE fan_profiles (
-    user_id UUID PRIMARY KEY,
-    subscription_active BOOLEAN NOT NULL DEFAULT FALSE,
-    subscription_start_date TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT now()
+-- Create table for fan profiles with an auto-generated primary key "id"
+CREATE TABLE IF NOT EXISTS fan_profiles (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL UNIQUE,
+    subscription_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TABLE releases (
-    id SERIAL PRIMARY KEY,
-    artist_id UUID NOT NULL,
-    title TEXT NOT NULL,
-    release_date DATE NOT NULL,
-    upc VARCHAR(50),
-    created_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT fk_artist
-        FOREIGN KEY (artist_id)
-            REFERENCES artist_profiles(user_id)
-            ON DELETE CASCADE
+-- Create table for audio files with an auto-generated primary key "id"
+CREATE TABLE IF NOT EXISTS audio_files (
+    id BIGSERIAL PRIMARY KEY,
+    file_identifier VARCHAR(255),
+    file_url TEXT,
+    file_size BIGINT,
+    checksum VARCHAR(255),
+    file_path TEXT
 );
 
-CREATE TABLE tracks (
-    id SERIAL PRIMARY KEY,
-    release_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    duration INTEGER NOT NULL,
-    isrc VARCHAR(50),
-    file_path TEXT NOT NULL,
-    file_size INTEGER,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    CONSTRAINT fk_release
-        FOREIGN KEY (release_id)
-            REFERENCES releases(id)
-            ON DELETE CASCADE
+-- Create table for releases with an auto-generated primary key "id"
+CREATE TABLE IF NOT EXISTS releases (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    release_date DATE,
+    upc VARCHAR(255),
+    artist_id UUID NOT NULL
+);
+
+-- Create table for tracks with an auto-generated primary key "id"
+CREATE TABLE IF NOT EXISTS tracks (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(255),
+    duration INTEGER,
+    release_id BIGINT REFERENCES releases(id)
 );

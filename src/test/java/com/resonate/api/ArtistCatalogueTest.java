@@ -61,7 +61,6 @@ public class ArtistCatalogueTest {
     private ArtistProfile createArtistProfile() {
         ArtistProfile artistProfile = ArtistProfile.builder()
                 .biography("Artist Biography")
-                .socialLinks("{\"twitter\":\"@artist\"}")
                 .build();
 
         given()
@@ -102,9 +101,6 @@ public class ArtistCatalogueTest {
         Track track = Track.builder()
                 .title(title)
                 .duration(200)
-                .isrc("TEST123")
-                .filePath("test/path.mp3")
-                .fileSize(100000L)
                 .build();
 
         int trackId = given()
@@ -128,7 +124,6 @@ public class ArtistCatalogueTest {
         // Create an Artist Profile
         ArtistProfile artistProfile = ArtistProfile.builder()
                 .biography("Artist Biography")
-                .socialLinks("{\"twitter\":\"@artist\"}")
                 .build();
 
         given()
@@ -200,9 +195,6 @@ public class ArtistCatalogueTest {
         Track track = Track.builder()
                 .title("New Track")
                 .duration(180)
-                .isrc("TRACK123")
-                .filePath("tracks/new.mp3")
-                .fileSize(150000L)
                 .build();
 
         given()
@@ -229,9 +221,6 @@ public class ArtistCatalogueTest {
         Track updatedTrack = Track.builder()
                 .title("Updated Track")
                 .duration(240)
-                .isrc("UPDATED123")
-                .filePath("tracks/updated.mp3")
-                .fileSize(200000L)
                 .build();
 
         given()

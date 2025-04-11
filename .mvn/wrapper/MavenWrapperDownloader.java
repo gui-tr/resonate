@@ -1,22 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Authenticator;
@@ -31,24 +12,21 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public final class MavenWrapperDownloader {
     private static final String WRAPPER_VERSION = "3.3.2";
-
     private static final boolean VERBOSE = Boolean.parseBoolean(System.getenv("MVNW_VERBOSE"));
 
     public static void main(String[] args) {
-        log("Apache Maven Wrapper Downloader " + WRAPPER_VERSION);
-
+        System.out.println("Apache Maven Wrapper Downloader " + WRAPPER_VERSION);
         if (args.length != 2) {
             System.err.println(" - ERROR wrapperUrl or wrapperJarPath parameter missing");
             System.exit(1);
         }
-
         try {
-            log(" - Downloader started");
+            System.out.println(" - Downloader started");
             final URL wrapperUrl = URI.create(args[0]).toURL();
             final String jarPath = args[1].replace("..", ""); // Sanitize path
             final Path wrapperJarPath = Paths.get(jarPath).toAbsolutePath().normalize();
             downloadFileFromURL(wrapperUrl, wrapperJarPath);
-            log("Done");
+            System.out.println("Done");
         } catch (IOException e) {
             System.err.println("- Error downloading: " + e.getMessage());
             if (VERBOSE) {
@@ -60,7 +38,7 @@ public final class MavenWrapperDownloader {
 
     private static void downloadFileFromURL(URL wrapperUrl, Path wrapperJarPath)
             throws IOException {
-        log(" - Downloading to: " + wrapperJarPath);
+        System.out.println(" - Downloading to: " + wrapperJarPath);
         if (System.getenv("MVNW_USERNAME") != null && System.getenv("MVNW_PASSWORD") != null) {
             final String username = System.getenv("MVNW_USERNAME");
             final char[] password = System.getenv("MVNW_PASSWORD").toCharArray();
@@ -71,8 +49,7 @@ public final class MavenWrapperDownloader {
                 }
             });
         }
-        Path temp = wrapperJarPath
-                .getParent()
+        Path temp = wrapperJarPath.getParent()
                 .resolve(wrapperJarPath.getFileName() + "."
                         + Long.toUnsignedString(ThreadLocalRandom.current().nextLong()) + ".tmp");
         try (InputStream inStream = wrapperUrl.openStream()) {
@@ -81,13 +58,6 @@ public final class MavenWrapperDownloader {
         } finally {
             Files.deleteIfExists(temp);
         }
-        log(" - Downloader complete");
+        System.out.println(" - Downloader complete");
     }
-
-    private static void log(String msg) {
-        if (VERBOSE) {
-            System.out.println(msg);
-        }
-    }
-
 }

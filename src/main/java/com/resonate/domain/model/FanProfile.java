@@ -1,31 +1,32 @@
 package com.resonate.domain.model;
 
-import lombok.*;
-import jakarta.persistence.*;
-import java.time.OffsetDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-
-@Entity
-@Table(name = "fan_profiles")
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Entity
+@Table(name = "fan_profiles")
 public class FanProfile {
 
     @Id
-    @Column(name = "user_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "user_id", nullable = false, unique = true)
     private UUID userId;
 
-    @Column(name = "subscription_active", nullable = false)
+    @Column(name = "subscription_active")
     private boolean subscriptionActive;
-
-    @Column(name = "subscription_start_date")
-    private OffsetDateTime subscriptionStartDate;
-
-    @Builder.Default
-    @Column(name = "created_at", nullable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
 }

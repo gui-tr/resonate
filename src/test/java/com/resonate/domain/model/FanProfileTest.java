@@ -19,15 +19,11 @@ class FanProfileTest {
         FanProfile profile = FanProfile.builder()
                 .userId(userId)
                 .subscriptionActive(subscriptionActive)
-                .subscriptionStartDate(subscriptionStartDate)
-                .createdAt(createdAt)
                 .build();
 
         assertNotNull(profile);
         assertEquals(userId, profile.getUserId());
         assertTrue(profile.isSubscriptionActive());
-        assertEquals(subscriptionStartDate, profile.getSubscriptionStartDate());
-        assertEquals(createdAt, profile.getCreatedAt());
     }
 
     @Test
@@ -37,36 +33,8 @@ class FanProfileTest {
         assertNotNull(profile);
         assertNull(profile.getUserId());
         assertFalse(profile.isSubscriptionActive());
-        assertNull(profile.getSubscriptionStartDate());
-        assertNotNull(profile.getCreatedAt());
     }
 
-    @Test
-    void testFanProfileCreationWithAllArgsConstructor() {
-        UUID userId = UUID.randomUUID();
-        boolean subscriptionActive = true;
-        OffsetDateTime subscriptionStartDate = OffsetDateTime.now();
-        OffsetDateTime createdAt = OffsetDateTime.now();
-
-        FanProfile profile = new FanProfile(userId, subscriptionActive, subscriptionStartDate, createdAt);
-
-        assertNotNull(profile);
-        assertEquals(userId, profile.getUserId());
-        assertTrue(profile.isSubscriptionActive());
-        assertEquals(subscriptionStartDate, profile.getSubscriptionStartDate());
-        assertEquals(createdAt, profile.getCreatedAt());
-    }
-
-    @Test
-    void testDefaultCreatedAtValue() {
-        FanProfile profile = FanProfile.builder()
-                .userId(UUID.randomUUID())
-                .subscriptionActive(true)
-                .build();
-
-        assertNotNull(profile.getCreatedAt());
-        assertTrue(profile.getCreatedAt().isBefore(OffsetDateTime.now().plusSeconds(1)));
-    }
 
     @Test
     void testFanProfileSettersAndGetters() {
@@ -78,13 +46,9 @@ class FanProfileTest {
 
         profile.setUserId(newUserId);
         profile.setSubscriptionActive(newSubscriptionActive);
-        profile.setSubscriptionStartDate(newSubscriptionStartDate);
-        profile.setCreatedAt(newCreatedAt);
 
         assertEquals(newUserId, profile.getUserId());
         assertTrue(profile.isSubscriptionActive());
-        assertEquals(newSubscriptionStartDate, profile.getSubscriptionStartDate());
-        assertEquals(newCreatedAt, profile.getCreatedAt());
     }
 
     @Test
@@ -97,15 +61,11 @@ class FanProfileTest {
         FanProfile.FanProfileBuilder builder = FanProfile.builder();
         builder.userId(userId);
         builder.subscriptionActive(subscriptionActive);
-        builder.subscriptionStartDate(subscriptionStartDate);
-        builder.createdAt(createdAt);
         FanProfile profile = builder.build();
 
         assertNotNull(profile);
         assertEquals(userId, profile.getUserId());
         assertTrue(profile.isSubscriptionActive());
-        assertEquals(subscriptionStartDate, profile.getSubscriptionStartDate());
-        assertEquals(createdAt, profile.getCreatedAt());
     }
 
     @Test

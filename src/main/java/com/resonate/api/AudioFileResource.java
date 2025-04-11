@@ -12,7 +12,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.Map;
 
 @Path("/api/audio-files")
@@ -32,10 +31,10 @@ public class AudioFileResource {
 
     @GET
     @Path("/upload")
-    @Operation(summary = "Generate a signed URL for file upload", description = "Returns a signed URL that allows the client to directly upload a file to Backblaze B2")
+    @Operation(summary = "Generate a signed URL for file upload", description = "Returns a signed URL for direct file upload to Backblaze B2")
     @APIResponse(responseCode = "200", description = "Signed URL generated successfully")
     public Response getSignedUploadUrl(@QueryParam("fileName") String fileName, @QueryParam("contentType") String contentType) {
-        String safeContentType = contentType != null ? contentType : "audio/mpeg";
+        String safeContentType = (contentType != null) ? contentType : "audio/mpeg";
         Map<String, String> uploadInfo = storageService.generateUploadUrl(fileName, safeContentType);
         return Response.ok(uploadInfo).build();
     }
@@ -43,13 +42,13 @@ public class AudioFileResource {
     @POST
     @Path("/register")
     @Transactional
-    @Operation(summary = "Register an uploaded audio file", description = "After a successful upload to Backblaze B2, register the file metadata")
+    @Operation(summary = "Register an uploaded audio file", description = "Registers file metadata after successful upload to Backblaze B2")
     @APIResponse(responseCode = "201", description = "Audio file registration successful")
     public Response registerAudioFile(AudioFileRegistration registration) {
-        // Create a streaming URL
+        // Generate streaming URL
         String streamingUrl = storageService.generateDownloadUrl(registration.fileKey);
 
-        // Create and persist the audio file entity
+        // Create and persist AudioFile entity
         AudioFile audioFile = AudioFile.builder()
                 .fileIdentifier(registration.fileKey)
                 .fileUrl(streamingUrl)
@@ -58,7 +57,6 @@ public class AudioFileResource {
                 .build();
 
         audioFileRepository.persist(audioFile);
-
         return Response.status(Response.Status.CREATED).entity(audioFile).build();
     }
 
@@ -73,10 +71,7 @@ public class AudioFileResource {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Audio file not found").build();
         }
-
-        // Generate fresh streaming URL to ensure it's valid
         String streamingUrl = storageService.generateDownloadUrl(audioFile.getFileIdentifier());
-
         return Response.ok(Map.of("streamingUrl", streamingUrl)).build();
     }
 

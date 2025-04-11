@@ -19,15 +19,11 @@ class ArtistProfileTest {
         ArtistProfile profile = ArtistProfile.builder()
                 .userId(userId)
                 .biography(biography)
-                .socialLinks(socialLinks)
-                .createdAt(createdAt)
                 .build();
 
         assertNotNull(profile);
         assertEquals(userId, profile.getUserId());
         assertEquals(biography, profile.getBiography());
-        assertEquals(socialLinks, profile.getSocialLinks());
-        assertEquals(createdAt, profile.getCreatedAt());
     }
 
     @Test
@@ -37,36 +33,8 @@ class ArtistProfileTest {
         assertNotNull(profile);
         assertNull(profile.getUserId());
         assertNull(profile.getBiography());
-        assertNull(profile.getSocialLinks());
-        assertNotNull(profile.getCreatedAt());
     }
 
-    @Test
-    void testArtistProfileCreationWithAllArgsConstructor() {
-        UUID userId = UUID.randomUUID();
-        String biography = "Test Biography";
-        String socialLinks = "https://twitter.com/test";
-        OffsetDateTime createdAt = OffsetDateTime.now();
-
-        ArtistProfile profile = new ArtistProfile(userId, biography, socialLinks, createdAt);
-
-        assertNotNull(profile);
-        assertEquals(userId, profile.getUserId());
-        assertEquals(biography, profile.getBiography());
-        assertEquals(socialLinks, profile.getSocialLinks());
-        assertEquals(createdAt, profile.getCreatedAt());
-    }
-
-    @Test
-    void testDefaultCreatedAtValue() {
-        ArtistProfile profile = ArtistProfile.builder()
-                .userId(UUID.randomUUID())
-                .biography("Test Biography")
-                .build();
-
-        assertNotNull(profile.getCreatedAt());
-        assertTrue(profile.getCreatedAt().isBefore(OffsetDateTime.now().plusSeconds(1)));
-    }
 
     @Test
     void testArtistProfileSettersAndGetters() {
@@ -78,13 +46,10 @@ class ArtistProfileTest {
 
         profile.setUserId(newUserId);
         profile.setBiography(newBiography);
-        profile.setSocialLinks(newSocialLinks);
-        profile.setCreatedAt(newCreatedAt);
 
         assertEquals(newUserId, profile.getUserId());
         assertEquals(newBiography, profile.getBiography());
-        assertEquals(newSocialLinks, profile.getSocialLinks());
-        assertEquals(newCreatedAt, profile.getCreatedAt());
+
     }
 
     @Test
@@ -97,15 +62,12 @@ class ArtistProfileTest {
         ArtistProfile.ArtistProfileBuilder builder = ArtistProfile.builder();
         builder.userId(userId);
         builder.biography(biography);
-        builder.socialLinks(socialLinks);
-        builder.createdAt(createdAt);
         ArtistProfile profile = builder.build();
 
         assertNotNull(profile);
         assertEquals(userId, profile.getUserId());
         assertEquals(biography, profile.getBiography());
-        assertEquals(socialLinks, profile.getSocialLinks());
-        assertEquals(createdAt, profile.getCreatedAt());
+
     }
 
     @Test
