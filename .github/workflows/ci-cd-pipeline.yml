@@ -59,20 +59,19 @@ jobs:
       - name: Prepare Environment Configuration
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
-            # For development, copy and process the dev configmap
-            cp src/main/resources/configmaps/configmap-dev.properties src/main/resources/application.properties
+            # For development, copy only the dev-specific properties and inject their secrets
+            cat src/main/resources/configmaps/configmap-dev.properties >> src/main/resources/application.properties
             sed -i "s|\${SONAR_HOST_URL}|${{ secrets.SONAR_HOST_URL }}|g" src/main/resources/application.properties
             sed -i "s|\${SONAR_TOKEN}|${{ secrets.SONAR_TOKEN }}|g" src/main/resources/application.properties
-          else
-            # For production, copy the prod configmap
-            cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application.properties
+            sed -i "s|\${SONAR_PROJECT_KEY}|${{ secrets.SONAR_PROJECT_KEY }}|g" src/main/resources/application.properties
+            sed -i "s|\${SONAR_ORGANIZATION}|${{ secrets.SONAR_ORGANIZATION }}|g" src/main/resources/application.properties
           fi
 
       # Build the application (running tests when in DEV)
       - name: Build with Maven
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
-            # Run tests with explicit test profile to ensure test properties are used
+            # Run tests with explicit test profile to ensure test properties override any conflicting properties
             mvn clean package -Dquarkus.profile=test
           else
             mvn clean package -Dquarkus.profile=prod -DskipTests
@@ -85,7 +84,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           mvn sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
