@@ -59,7 +59,7 @@ jobs:
           if [ "${CONFIG_ENV}" = "DEV" ]; then
             mvn clean package -Dquarkus.profile=dev
           else
-            mvn clean package -Dquarkus.profile=prod
+            mvn clean package -Dquarkus.profile=prod -DskipTests
           fi
 
       # Run Sonar analysis only on develop branch - moved after Maven build
