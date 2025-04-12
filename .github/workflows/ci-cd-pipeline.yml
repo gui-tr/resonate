@@ -15,6 +15,21 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # Add a service container for the database (using PostgreSQL as an example)
+    services:
+      db:
+        image: postgres:13
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
     environment: ${{ github.ref == 'refs/heads/main' && 'Production' || 'Development' }}
     
     steps:
@@ -48,12 +63,14 @@ jobs:
             cp src/main/resources/configmaps/configmap-dev.properties src/main/resources/application-dev.properties
             sed -i "s|\${SONAR_HOST_URL}|${{ secrets.SONAR_HOST_URL }}|g" src/main/resources/application-dev.properties
             sed -i "s|\${SONAR_TOKEN}|${{ secrets.SONAR_TOKEN }}|g" src/main/resources/application-dev.properties
+            # Update DB URL to point to the containerized PostgreSQL
+            sed -i "s|\${DB_URL}|jdbc:postgresql://db:5432/testdb|g" src/main/resources/application-dev.properties
           else
             # For production, copy the prod configmap
             cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application-prod.properties
           fi
 
-      # Build the application
+      # Build the application (running tests when in DEV)
       - name: Build with Maven
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
@@ -62,7 +79,7 @@ jobs:
             mvn clean package -Dquarkus.profile=prod -DskipTests
           fi
 
-      # Run Sonar analysis only on develop branch - moved after Maven build
+      # Run SonarCloud analysis only on the develop branch
       - name: Run SonarCloud Analysis
         if: github.ref == 'refs/heads/develop'
         env:
