@@ -14,5 +14,5 @@ RETURNS uuid
 LANGUAGE sql
 STABLE
 AS $$
-  SELECT current_setting('request.jwt.claims', true)::json->>'sub'::uuid;
-$$; 
+  SELECT (current_setting('request.jwt.claims', true)::json->>'sub')::uuid;
+$$;
