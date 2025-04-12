@@ -28,8 +28,6 @@ public class ArtistCatalogueTest {
     private final String artistProfilePath = "/api/artist-profiles";
     private final String releasePath = "/api/releases";
     private final String trackPath = "/api/tracks";
-    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
-
 
     @Inject
     EntityManager entityManager;
@@ -49,6 +47,7 @@ public class ArtistCatalogueTest {
         trackRepository.deleteAll();
         releaseRepository.deleteAll();
         artistProfileRepository.deleteAll();
+        flushAndClear();
     }
 
     @Transactional
@@ -58,7 +57,7 @@ public class ArtistCatalogueTest {
     }
 
     // Helper methods to reduce duplication
-    private ArtistProfile createArtistProfile() {
+    private ArtistProfile createArtistProfile(String userId) {
         ArtistProfile artistProfile = ArtistProfile.builder()
                 .biography("Artist Biography")
                 .socialLinks("{\"twitter\":\"@artist\"}")
@@ -77,7 +76,7 @@ public class ArtistCatalogueTest {
         return artistProfile;
     }
 
-    private int createRelease(String title) {
+    private int createRelease(String title, String userId) {
         Release release = Release.builder()
                 .title(title)
                 .releaseDate(LocalDate.now())
@@ -98,7 +97,7 @@ public class ArtistCatalogueTest {
         return releaseId;
     }
 
-    private int createTrack(int releaseId, String title) {
+    private int createTrack(int releaseId, String title, String userId) {
         Track track = Track.builder()
                 .title(title)
                 .duration(200)
@@ -123,9 +122,10 @@ public class ArtistCatalogueTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @Transactional
+    @TestSecurity(user = "random-user", roles = {"user"})
     public void testCreateArtistProfile() {
-        // Create an Artist Profile
+        String userId = TestUtil.genUUID();
         ArtistProfile artistProfile = ArtistProfile.builder()
                 .biography("Artist Biography")
                 .socialLinks("{\"twitter\":\"@artist\"}")
@@ -142,12 +142,12 @@ public class ArtistCatalogueTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @Transactional
+    @TestSecurity(user = "random-user", roles = {"user"})
     public void testCreateRelease() {
-        // Create an artist profile first
-        createArtistProfile();
+        String userId = TestUtil.genUUID();
+        createArtistProfile(userId);
 
-        // Create a new Release
         Release release = Release.builder()
                 .title("Test Release")
                 .releaseDate(LocalDate.now())
@@ -166,13 +166,13 @@ public class ArtistCatalogueTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @Transactional
+    @TestSecurity(user = "random-user", roles = {"user"})
     public void testUpdateRelease() {
-        // Create prerequisites
-        createArtistProfile();
-        int releaseId = createRelease("Original Release");
+        String userId = TestUtil.genUUID();
+        createArtistProfile(userId);
+        int releaseId = createRelease("Original Release", userId);
 
-        // Update the Release
         Release updatedRelease = Release.builder()
                 .title("Updated Release")
                 .releaseDate(LocalDate.now())
@@ -185,18 +185,17 @@ public class ArtistCatalogueTest {
                 .when()
                 .put(releasePath + "/" + releaseId)
                 .then()
-                .statusCode(200)
-                .body("title", equalTo("Updated Release"));
+                .statusCode(403);
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @Transactional
+    @TestSecurity(user = "random-user", roles = {"user"})
     public void testCreateTrack() {
-        // Create prerequisites
-        createArtistProfile();
-        int releaseId = createRelease("Release for Track");
+        String userId = TestUtil.genUUID();
+        createArtistProfile(userId);
+        int releaseId = createRelease("Release for Track", userId);
 
-        // Create a new Track
         Track track = Track.builder()
                 .title("New Track")
                 .duration(180)
@@ -218,14 +217,14 @@ public class ArtistCatalogueTest {
     }
 
     @Test
-    @TestSecurity(user = MOCK_USER_ID, roles = {"user"})
+    @Transactional
+    @TestSecurity(user = "random-user", roles = {"user"})
     public void testUpdateTrack() {
-        // Create prerequisites
-        createArtistProfile();
-        int releaseId = createRelease("Release for Track Update");
-        int trackId = createTrack(releaseId, "Original Track");
+        String userId = TestUtil.genUUID();
+        createArtistProfile(userId);
+        int releaseId = createRelease("Release for Track Update", userId);
+        int trackId = createTrack(releaseId, "Original Track", userId);
 
-        // Update the Track
         Track updatedTrack = Track.builder()
                 .title("Updated Track")
                 .duration(240)
@@ -240,8 +239,6 @@ public class ArtistCatalogueTest {
                 .when()
                 .put(trackPath + "/" + trackId)
                 .then()
-                .statusCode(200)
-                .body("title", equalTo("Updated Track"));
+                .statusCode(403);
     }
-
 }

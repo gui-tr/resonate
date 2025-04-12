@@ -6,10 +6,10 @@ public class TestUtil {
 
     public static final String ARTIST_ID_STRING = "00000000-0000-0000-0000-000000000000";
     public static final String FAN_ID_STRING = "00000000-0000-0000-0000-000000000001";
+    public static final String TEST_USER_ID = ARTIST_ID_STRING;
 
     public static final UUID ARTIST_UUID = UUID.fromString(ARTIST_ID_STRING);
     public static final UUID FAN_UUID = UUID.fromString(FAN_ID_STRING);
-
 
     public static String genUUID() {
         return UUID.randomUUID().toString();
