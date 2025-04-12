@@ -57,8 +57,12 @@ public class TestDataSetup {
     public ArtistProfile createArtistProfile(UUID userId) {
         // Before creating, check if this ID matches one of our fixed test users
         if (userId.equals(TestUtil.ARTIST_UUID)) {
-            // Return the existing artist profile from the test DB
-            return artistProfileRepository.findByUserId(userId);
+            // Try to find the existing artist profile from the test DB
+            ArtistProfile existingProfile = artistProfileRepository.findByUserId(userId);
+            if (existingProfile != null) {
+                return existingProfile;
+            }
+            // If it doesn't exist, create it
         }
 
         ArtistProfile profile = ArtistProfile.builder()
@@ -88,8 +92,12 @@ public class TestDataSetup {
     public FanProfile createFanProfile(UUID userId) {
         // Before creating, check if this ID matches one of our fixed test users
         if (userId.equals(TestUtil.FAN_UUID)) {
-            // Return the existing fan profile from the test DB
-            return fanProfileRepository.findByUserId(userId);
+            // Try to find the existing fan profile from the test DB
+            FanProfile existingProfile = fanProfileRepository.findByUserId(userId);
+            if (existingProfile != null) {
+                return existingProfile;
+            }
+            // If it doesn't exist, create it
         }
 
         FanProfile profile = FanProfile.builder()
