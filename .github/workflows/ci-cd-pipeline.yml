@@ -98,3 +98,4 @@ jobs:
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           appdir: "."
           procfile: "Procfile"
+          usedocker: true
