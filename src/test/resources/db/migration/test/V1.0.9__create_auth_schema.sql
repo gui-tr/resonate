@@ -17,9 +17,6 @@ AS $$
   SELECT (current_setting('request.jwt.claims', true)::json->>'sub')::uuid;
 $$;
 
-  SELECT current_setting('request.jwt.claims', true)::json->>'sub'::uuid;
-$$;
-
 -- Create test artist profile to satisfy foreign key constraints
 INSERT INTO artist_profiles (user_id, biography, social_links, created_at)
 VALUES (
