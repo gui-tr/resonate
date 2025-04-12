@@ -167,17 +167,16 @@ public class SupabaseAuthService {
      * Deletes a user from Supabase Auth.
      *
      * @param userId The UUID of the user to delete.
-     * @param token  Admin JWT token or user's own token.
      * @throws Exception if deletion fails.
      */
-    public void deleteUser(UUID userId, String token) throws Exception {
+    public void deleteUser(UUID userId) throws Exception {
         LOG.info("Attempting to delete user with ID: " + userId);
         
         // Supabase requires a specific format for user deletion
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(supabaseUrl + "/auth/v1/admin/users/" + userId))
             .header("apikey", supabaseApiKey)
-            .header("Authorization", "Bearer " + token)
+            .header("Authorization", "Bearer " + supabaseApiKey) // Use the API key as the bearer token
             .header("Content-Type", MediaType.APPLICATION_JSON)
             .DELETE()
             .build();

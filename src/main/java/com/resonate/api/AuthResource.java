@@ -4,6 +4,8 @@ import com.resonate.auth.SupabaseAuthService;
 import com.resonate.auth.SupabaseAuthService.AuthResult;
 import com.resonate.domain.model.ArtistProfile;
 import com.resonate.domain.model.FanProfile;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -37,6 +39,7 @@ public class AuthResource {
     @POST
     @Path("/register")
     @Transactional
+    @PermitAll
     public Response register(RegisterRequest request) {
         LOG.info("Received registration request for email: " + request.email + ", userType: " + request.userType);
         
@@ -110,6 +113,7 @@ public class AuthResource {
 
     @POST
     @Path("/login")
+    @PermitAll
     public Response login(LoginRequest request) {
         LOG.info("Received login request for email: " + request.email);
         
@@ -147,6 +151,7 @@ public class AuthResource {
 
     @POST
     @Path("/logout")
+    @Authenticated
     public Response logout() {
         LOG.info("Received logout request");
         return Response.ok(Map.of("message", "Logged out successfully")).build();
@@ -156,20 +161,11 @@ public class AuthResource {
     @DELETE
     @Path("/user/{userId}")
     @Transactional
-    public Response deleteUser(@PathParam("userId") UUID userId, @Context HttpHeaders headers) {
+    @Authenticated
+    public Response deleteUser(@PathParam("userId") UUID userId) {
         LOG.info("Received delete request for user: " + userId);
         
         try {
-            // Extract token from Authorization header for authentication
-            String authHeader = headers.getHeaderString(HttpHeaders.AUTHORIZATION);
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity(Map.of("message", "Authentication required"))
-                        .build();
-            }
-            
-            String token = authHeader.substring("Bearer ".length());
-            
             // First determine user type to know which profile to delete
             String userType = determineUserType(userId);
             if (userType == null) {
@@ -187,6 +183,15 @@ public class AuthResource {
                         .executeUpdate();
                     LOG.info("Deleted fan profile for user: " + userId);
                 }
+            }
+            
+            // Call Supabase to delete the user (assuming user has proper permissions)
+            try {
+                authService.deleteUser(userId);  // No need to pass token now
+                LOG.info("User deleted successfully in Supabase: " + userId);
+            } catch (Exception e) {
+                LOG.error("Failed to delete user in Supabase: " + e.getMessage(), e);
+                // Continue, as we've already deleted the local profile
             }
             
             LOG.info("User deleted successfully: " + userId);
