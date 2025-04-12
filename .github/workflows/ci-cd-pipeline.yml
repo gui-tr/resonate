@@ -53,7 +53,16 @@ jobs:
             cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application-prod.properties
           fi
 
-      # Run Sonar analysis only on develop branch
+      # Build the application
+      - name: Build with Maven
+        run: |
+          if [ "${CONFIG_ENV}" = "DEV" ]; then
+            mvn clean package -Dquarkus.profile=dev
+          else
+            mvn clean package -Dquarkus.profile=prod
+          fi
+
+      # Run Sonar analysis only on develop branch - moved after Maven build
       - name: Run SonarCloud Analysis
         if: github.ref == 'refs/heads/develop'
         env:
@@ -65,15 +74,6 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
 
-      # Build the application
-      - name: Build with Maven
-        run: |
-          if [ "${CONFIG_ENV}" = "DEV" ]; then
-            mvn clean package -Dquarkus.profile=dev
-          else
-            mvn clean package -Dquarkus.profile=prod
-          fi
-
       # Deploy to Heroku
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.12.14
@@ -82,4 +82,4 @@ jobs:
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           appdir: "."
-          procfile: "Procfile" 
+          procfile: "Procfile"
