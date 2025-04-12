@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 public class FanProfileResourceTest {
 
     private final String basePath = "/api/fan-profiles";
-    private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
+    private static final String MOCK_USER_ID = TestUtil.FAN_ID_STRING;
 
     @Inject
     FanProfileRepository fanProfileRepository;

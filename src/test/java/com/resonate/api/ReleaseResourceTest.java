@@ -29,7 +29,7 @@ public class ReleaseResourceTest {
 
     private final String basePath = "/api/releases";
     private static final String MOCK_USER_ID = TestUtil.ARTIST_ID_STRING;
-    private UUID userId;
+    private UUID userId = UUID.fromString(MOCK_USER_ID);
     private Long releaseId;
 
     @Inject
@@ -46,8 +46,6 @@ public class ReleaseResourceTest {
 
     @BeforeEach
     public void setup() {
-        userId = UUID.fromString(MOCK_USER_ID);
-
         // Create test data
         ArtistProfile artistProfile = testDataSetup.createArtistProfile(userId);
         Release release = testDataSetup.createRelease(userId, "Test Release");

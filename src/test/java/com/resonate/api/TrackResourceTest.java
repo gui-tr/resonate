@@ -48,6 +48,9 @@ public class TrackResourceTest {
     @BeforeEach
     @Transactional
     public void setup() {
+        // Create an artist profile for the fixed test artist
+        ArtistProfile artistProfile = testDataSetup.createArtistProfile(TestUtil.ARTIST_UUID);
+
         // Create a release for the fixed test artist
         Release release = testDataSetup.createRelease(TestUtil.ARTIST_UUID, "Test Release");
         releaseId = release.getId();
