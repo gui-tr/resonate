@@ -17,6 +17,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -59,6 +60,7 @@ public class ArtistCatalogueTest {
     // Helper methods to reduce duplication
     private ArtistProfile createArtistProfile(String userId) {
         ArtistProfile artistProfile = ArtistProfile.builder()
+                .userId(UUID.fromString(userId))
                 .biography("Artist Biography")
                 .socialLinks("{\"twitter\":\"@artist\"}")
                 .build();
@@ -123,9 +125,8 @@ public class ArtistCatalogueTest {
 
     @Test
     @Transactional
-    @TestSecurity(user = "random-user", roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testCreateArtistProfile() {
-        String userId = TestUtil.genUUID();
         ArtistProfile artistProfile = ArtistProfile.builder()
                 .biography("Artist Biography")
                 .socialLinks("{\"twitter\":\"@artist\"}")
@@ -143,10 +144,9 @@ public class ArtistCatalogueTest {
 
     @Test
     @Transactional
-    @TestSecurity(user = "random-user", roles = {"user"})
+    @TestSecurity(user = TestUtil.ARTIST_ID_STRING, roles = {"user"})
     public void testCreateRelease() {
-        String userId = TestUtil.genUUID();
-        createArtistProfile(userId);
+        createArtistProfile(TestUtil.ARTIST_ID_STRING);
 
         Release release = Release.builder()
                 .title("Test Release")

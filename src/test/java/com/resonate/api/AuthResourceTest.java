@@ -7,6 +7,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
+import io.quarkus.test.security.TestSecurity;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -108,7 +109,7 @@ public class AuthResourceTest {
     @Test
     public void testLoginWithInvalidCredentials() throws Exception {
         when(supabaseAuthService.signIn(anyString(), anyString()))
-                .thenThrow(new io.quarkus.security.UnauthorizedException("Invalid credentials"));
+                .thenThrow(new io.quarkus.security.UnauthorizedException("Authentication failed"));
 
         AuthResource.LoginRequest request = new AuthResource.LoginRequest();
         request.email = "wrong@example.com";
@@ -121,12 +122,12 @@ public class AuthResourceTest {
                 .post(basePath + "/login")
                 .then()
                 .statusCode(401)
-                .body("message", containsString("Invalid credentials"));
+                .body("message", equalTo("Authentication failed"));
     }
 
     @Test
+    @TestSecurity(user = "test-user", roles = {"user"})
     public void testLogout() {
-        // Include content type if your endpoint expects it.
         given()
                 .contentType(ContentType.JSON)
                 .when()
