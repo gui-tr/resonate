@@ -60,12 +60,12 @@ jobs:
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
             # For development, copy and process the dev configmap
-            cp src/main/resources/configmaps/configmap-dev.properties src/main/resources/application-dev.properties
-            sed -i "s|\${SONAR_HOST_URL}|${{ secrets.SONAR_HOST_URL }}|g" src/main/resources/application-dev.properties
-            sed -i "s|\${SONAR_TOKEN}|${{ secrets.SONAR_TOKEN }}|g" src/main/resources/application-dev.properties
+            cp src/main/resources/configmaps/configmap-dev.properties src/main/resources/application.properties
+            sed -i "s|\${SONAR_HOST_URL}|${{ secrets.SONAR_HOST_URL }}|g" src/main/resources/application.properties
+            sed -i "s|\${SONAR_TOKEN}|${{ secrets.SONAR_TOKEN }}|g" src/main/resources/application.properties
           else
             # For production, copy the prod configmap
-            cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application-prod.properties
+            cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application.properties
           fi
 
       # Build the application (running tests when in DEV)
