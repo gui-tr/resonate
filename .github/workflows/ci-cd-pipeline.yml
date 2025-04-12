@@ -63,8 +63,6 @@ jobs:
             cp src/main/resources/configmaps/configmap-dev.properties src/main/resources/application-dev.properties
             sed -i "s|\${SONAR_HOST_URL}|${{ secrets.SONAR_HOST_URL }}|g" src/main/resources/application-dev.properties
             sed -i "s|\${SONAR_TOKEN}|${{ secrets.SONAR_TOKEN }}|g" src/main/resources/application-dev.properties
-            # Update DB URL to point to the containerized PostgreSQL
-            sed -i "s|\${DB_URL}|jdbc:postgresql://db:5432/testdb|g" src/main/resources/application-dev.properties
           else
             # For production, copy the prod configmap
             cp src/main/resources/configmaps/configmap-prod.properties src/main/resources/application-prod.properties
@@ -74,7 +72,8 @@ jobs:
       - name: Build with Maven
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
-            mvn clean package -Dquarkus.profile=dev
+            # Run tests with explicit test profile to ensure test properties are used
+            mvn clean package -Dquarkus.profile=test
           else
             mvn clean package -Dquarkus.profile=prod -DskipTests
           fi
