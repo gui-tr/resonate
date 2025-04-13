@@ -89,7 +89,11 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
 
-      # Deploy to Heroku
+      # Install the Heroku CLI (required for buildpack deployment)
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      # Deploy to Heroku using buildpack deployment (non-Docker mode)
       - name: Deploy to Heroku
         uses: akhileshns/heroku-deploy@v3.12.14
         with:
@@ -98,4 +102,3 @@ jobs:
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           appdir: "."
           procfile: "Procfile"
-          usedocker: true
