@@ -114,6 +114,6 @@ jobs:
           # Add (or update) the Heroku remote for your app.
           heroku git:remote -a ${{ secrets.HEROKU_APP_NAME }}
           # Deploy the current commit to the remote's main branch.
-          git push --force-with-lease heroku HEAD:main
+          git push --force heroku HEAD:main
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
