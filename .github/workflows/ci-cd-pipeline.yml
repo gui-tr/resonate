@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # This ensures that you have a full clone rather than a shallow clone
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
