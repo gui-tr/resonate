@@ -10,6 +10,7 @@ on:
       - main
 
 env:
+  # CONFIG_ENV will be PROD when pushing to main, otherwise DEV.
   CONFIG_ENV: ${{ github.ref == 'refs/heads/main' && 'PROD' || 'DEV' }}
 
 jobs:
@@ -71,7 +72,6 @@ jobs:
       - name: Build with Maven
         run: |
           if [ "${CONFIG_ENV}" = "DEV" ]; then
-            # Run tests with explicit test profile to ensure test properties override any conflicting properties
             mvn clean package -Dquarkus.profile=test
           else
             mvn clean package -Dquarkus.profile=prod -DskipTests
@@ -89,17 +89,29 @@ jobs:
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
 
-      # Install the Heroku CLI (required for buildpack deployment)
+      # Install the Heroku CLI (required for Git-based deployment)
       - name: Install Heroku CLI
         run: curl https://cli-assets.heroku.com/install.sh | sh
 
-      # Deploy to Heroku using buildpack deployment (non-Docker mode)
+      # Set up the .netrc file for Heroku authentication
+      - name: Set up .netrc for Heroku Authentication
+        run: |
+          echo "machine api.heroku.com" >> ~/.netrc
+          echo "  login $HEROKU_EMAIL" >> ~/.netrc
+          echo "  password $HEROKU_API_KEY" >> ~/.netrc
+          echo "machine git.heroku.com" >> ~/.netrc
+          echo "  login $HEROKU_EMAIL" >> ~/.netrc
+          echo "  password $HEROKU_API_KEY" >> ~/.netrc
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+
+      # Deploy to Heroku following the official Git deployment method
       - name: Deploy to Heroku
-        uses: akhileshns/heroku-deploy@v3.12.14
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          appdir: "."
-          procfile: "Procfile"
-          dontuseforce: 1
+        run: |
+          # Add (or update) the Heroku remote for your app.
+          heroku git:remote -a ${{ secrets.HEROKU_APP_NAME }}
+          # Deploy the current commit to the remote's main branch.
+          git push --force-with-lease heroku HEAD:main
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
