@@ -2,6 +2,7 @@ package com.resonate.api;
 
 import com.resonate.api.dto.CreateReleaseRequest;
 import com.resonate.api.dto.CreateTrackRequest;
+import com.resonate.api.dto.UpdateReleaseRequest;
 import com.resonate.domain.model.Release;
 import com.resonate.domain.model.Track;
 import com.resonate.domain.model.ArtistProfile;
@@ -122,15 +123,25 @@ public class ReleaseResource {
     @Operation(summary = "Update release")
     @APIResponse(responseCode = "200", description = "Release updated successfully")
     @APIResponse(responseCode = "404", description = "Release not found")
-    public Response updateRelease(@PathParam("id") Long id, Release updatedRelease) {
+    public Response updateRelease(@PathParam("id") Long id, UpdateReleaseRequest request) {
         Release release = releaseRepository.findById(id);
         if (release == null) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity("Release not found").build();
         }
-        release.setTitle(updatedRelease.getTitle());
-        release.setReleaseDate(updatedRelease.getReleaseDate());
-        release.setUpc(updatedRelease.getUpc());
+        
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            release.setTitle(request.getTitle());
+        }
+        
+        if (request.getReleaseDate() != null) {
+            release.setReleaseDate(request.getReleaseDate());
+        }
+        
+        if (request.getUpc() != null) {
+            release.setUpc(request.getUpc());
+        }
+        
         releaseRepository.persist(release);
         return Response.ok(release).build();
     }
