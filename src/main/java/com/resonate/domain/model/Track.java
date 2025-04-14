@@ -2,6 +2,8 @@ package com.resonate.domain.model;
 
 import com.resonate.domain.media.AudioFile;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
@@ -13,13 +15,13 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Track {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Many-to-one relationship with Release
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "release_id", nullable = false)
     @JsonBackReference
@@ -35,17 +37,20 @@ public class Track {
     private String isrc;
 
     @Column(name = "file_path", nullable = false)
+    @JsonProperty("filePath")
     private String filePath;
 
     @Column(name = "file_size")
+    @JsonProperty("fileSize")
     private Long fileSize;
 
-    // Link to the uploaded audio file metadata.
     @OneToOne
     @JoinColumn(name = "audio_file_id")
+    @JsonProperty("audioFileId")
     private AudioFile audioFile;
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
+    @JsonProperty("createdAt")
     private OffsetDateTime createdAt = OffsetDateTime.now();
 }

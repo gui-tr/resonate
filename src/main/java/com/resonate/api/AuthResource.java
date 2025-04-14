@@ -4,8 +4,6 @@ import com.resonate.auth.SupabaseAuthService;
 import com.resonate.auth.SupabaseAuthService.AuthResult;
 import com.resonate.domain.model.ArtistProfile;
 import com.resonate.domain.model.FanProfile;
-import io.quarkus.security.Authenticated;
-import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -35,11 +33,9 @@ public class AuthResource {
     @Inject
     EntityManager em;
 
-
     @POST
     @Path("/register")
     @Transactional
-    @PermitAll
     public Response register(RegisterRequest request) {
         LOG.info("Received registration request for email: " + request.email + ", userType: " + request.userType);
         
@@ -110,10 +106,8 @@ public class AuthResource {
         }
     }
 
-
     @POST
     @Path("/login")
-    @PermitAll
     public Response login(LoginRequest request) {
         LOG.info("Received login request for email: " + request.email);
         
@@ -126,8 +120,10 @@ public class AuthResource {
                         .build();
             }
             
+            // Call Supabase to authenticate the user
             AuthResult authResult = authService.signIn(request.email, request.password);
             
+            // Build the response data
             Map<String, Object> result = new HashMap<>();
             result.put("userId", authResult.userId);
             result.put("token", authResult.token);
@@ -148,20 +144,16 @@ public class AuthResource {
         }
     }
 
-
     @POST
     @Path("/logout")
-    @Authenticated
     public Response logout() {
         LOG.info("Received logout request");
         return Response.ok(Map.of("message", "Logged out successfully")).build();
     }
-    
 
     @DELETE
     @Path("/user/{userId}")
     @Transactional
-    @Authenticated
     public Response deleteUser(@PathParam("userId") UUID userId) {
         LOG.info("Received delete request for user: " + userId);
         
@@ -232,6 +224,12 @@ public class AuthResource {
         } catch (NoResultException e) {
             return null;
         }
+    }
+
+    @GET
+    @Path("/me")
+    public Response getCurrentUser() {
+        return Response.ok(Map.of("message", "Security disabled - no current user")).build();
     }
 
     // Request DTOs

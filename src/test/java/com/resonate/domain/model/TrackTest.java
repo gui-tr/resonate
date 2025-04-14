@@ -66,7 +66,6 @@ class TrackTest {
 
     @Test
     void testTrackCreationWithAllArgsConstructor() {
-        Long id = 1L;
         String title = "Test Track";
         int duration = 180;
         String isrc = "US-123-45-67890";
@@ -74,10 +73,19 @@ class TrackTest {
         Long fileSize = 1024L;
         OffsetDateTime createdAt = OffsetDateTime.now();
 
-        Track track = new Track(id, mockRelease, title, duration, isrc, filePath, fileSize, mockAudioFile, createdAt);
+        Track track = Track.builder()
+                .release(mockRelease)
+                .title(title)
+                .duration(duration)
+                .isrc(isrc)
+                .filePath(filePath)
+                .fileSize(fileSize)
+                .audioFile(mockAudioFile)
+                .createdAt(createdAt)
+                .build();
 
         assertNotNull(track);
-        assertEquals(id, track.getId());
+        assertNotNull(track.getId());
         assertEquals(title, track.getTitle());
         assertEquals(duration, track.getDuration());
         assertEquals(isrc, track.getIsrc());

@@ -1,5 +1,7 @@
 package com.resonate.domain.media;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
@@ -11,6 +13,7 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AudioFile {
 
     @Id
@@ -19,14 +22,17 @@ public class AudioFile {
 
     // The file identifier returned from Backblaze B2 (or file name/path)
     @Column(name = "file_identifier", nullable = false)
+    @JsonProperty("fileIdentifier")
     private String fileIdentifier;
 
     // URL of the uploaded file (could be a signed URL for streaming)
     @Column(name = "file_url", nullable = false)
+    @JsonProperty("fileUrl")
     private String fileUrl;
 
     // File size in bytes
     @Column(name = "file_size")
+    @JsonProperty("fileSize")
     private Long fileSize;
 
     // Additional metadata, such as checksum, content type, etc.
@@ -35,5 +41,6 @@ public class AudioFile {
 
     @Builder.Default
     @Column(name = "created_at", nullable = false)
+    @JsonProperty("createdAt")
     private OffsetDateTime createdAt = OffsetDateTime.now();
 }
