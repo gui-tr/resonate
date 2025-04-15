@@ -37,14 +37,19 @@ public class ReleaseResource {
     ArtistProfileRepository artistProfileRepository;
 
     @GET
-    public List<Release> getAllReleases() {
-        return releaseRepository.listAll();
+    public Response getAllReleases() {
+        List<Release> releases = releaseRepository.listAll();
+        return Response.ok(releases).build();
     }
 
     @GET
     @Path("/{id}")
-    public Release getRelease(@PathParam("id") Long id) {
-        return releaseRepository.findById(id);
+    public Response getRelease(@PathParam("id") Long id) {
+        Release release = releaseRepository.findById(id);
+        if (release == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(release).build();
     }
 
     @POST
@@ -83,11 +88,15 @@ public class ReleaseResource {
         release.setReleaseDate(request.getReleaseDate());
         release.setUpc(request.getUpc());
 
-        releaseRepository.persist(release);
-        
-        return Response.status(Response.Status.CREATED)
-                .entity(release)
-                .build();
+        try {
+            releaseRepository.persist(release);
+            return Response.status(Response.Status.CREATED).entity(release).build();
+        } catch (Exception e) {
+            log.error("Failed to create release", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to create release: " + e.getMessage())
+                    .build();
+        }
     }
 
     @POST
@@ -120,53 +129,70 @@ public class ReleaseResource {
     @PUT
     @Path("/{id}")
     @Transactional
-    @Operation(summary = "Update release")
-    @APIResponse(responseCode = "200", description = "Release updated successfully")
-    @APIResponse(responseCode = "404", description = "Release not found")
     public Response updateRelease(@PathParam("id") Long id, UpdateReleaseRequest request) {
         Release release = releaseRepository.findById(id);
         if (release == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Release not found").build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        
-        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+
+        // Check if the current user is the artist who owns this release
+        UUID currentUserId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        if (!release.getArtistId().equals(currentUserId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        if (request.getTitle() != null) {
             release.setTitle(request.getTitle());
         }
-        
         if (request.getReleaseDate() != null) {
             release.setReleaseDate(request.getReleaseDate());
         }
-        
         if (request.getUpc() != null) {
             release.setUpc(request.getUpc());
         }
-        
-        releaseRepository.persist(release);
-        return Response.ok(release).build();
+
+        try {
+            releaseRepository.persist(release);
+            return Response.ok(release).build();
+        } catch (Exception e) {
+            log.error("Failed to update release", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to update release: " + e.getMessage())
+                    .build();
+        }
     }
 
     @DELETE
     @Path("/{id}")
     @Transactional
-    @Operation(summary = "Delete release")
-    @APIResponse(responseCode = "204", description = "Release deleted successfully")
-    @APIResponse(responseCode = "404", description = "Release not found")
     public Response deleteRelease(@PathParam("id") Long id) {
         Release release = releaseRepository.findById(id);
         if (release == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Release not found").build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
-        releaseRepository.delete(release);
-        return Response.noContent().build();
+
+        // Check if the current user is the artist who owns this release
+        UUID currentUserId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        if (!release.getArtistId().equals(currentUserId)) {
+            return Response.status(Response.Status.FORBIDDEN).build();
+        }
+
+        try {
+            releaseRepository.delete(release);
+            return Response.noContent().build();
+        } catch (Exception e) {
+            log.error("Failed to delete release", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to delete release: " + e.getMessage())
+                    .build();
+        }
     }
 
     @GET
     @Path("/public")
     @Operation(summary = "List all releases", description = "Returns a list of all published releases")
     @APIResponse(responseCode = "200", description = "List of releases retrieved successfully")
-    public Response getAllReleases(
+    public Response getAllPublicReleases(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("20") int size) {
 
@@ -190,6 +216,7 @@ public class ReleaseResource {
         }
 
         List<Track> tracks = releaseRepository.findTracksByReleaseId(id);
+        release.setTracks(tracks);
 
         return Response.ok(release).build();
     }

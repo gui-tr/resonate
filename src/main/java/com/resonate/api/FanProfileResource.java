@@ -26,21 +26,39 @@ public class FanProfileResource {
     @Operation(summary = "Create or update fan profile")
     @APIResponse(responseCode = "200", description = "Profile created or updated successfully")
     public Response createOrUpdateProfile(FanProfile profile) {
-        fanProfileRepository.upsert(profile);
-        return Response.ok(profile).build();
+        try {
+            fanProfileRepository.upsert(profile);
+            return Response.ok(profile).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to create/update fan profile: " + e.getMessage())
+                    .build();
+        }
     }
 
     @GET
-    @Path("/{id}")
-    @Operation(summary = "Get fan profile")
+    @Operation(summary = "Get current fan profile")
     @APIResponse(responseCode = "200", description = "Profile retrieved successfully")
     @APIResponse(responseCode = "404", description = "Fan profile not found")
-    public Response getProfile(@PathParam("id") UUID userId) {
-        FanProfile profile = fanProfileRepository.findByUserId(userId);
+    public Response getCurrentProfile() {
+        FanProfile profile = fanProfileRepository.findByUserId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
         if (profile == null) {
-            return Response.status(Response.Status.NOT_FOUND)
-                    .entity("Fan profile not found").build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.ok(profile).build();
+    }
+
+    @DELETE
+    @Operation(summary = "Delete current fan profile")
+    @APIResponse(responseCode = "200", description = "Profile deleted successfully")
+    @APIResponse(responseCode = "404", description = "Fan profile not found")
+    @Transactional
+    public Response deleteCurrentProfile() {
+        FanProfile profile = fanProfileRepository.findByUserId(UUID.fromString("00000000-0000-0000-0000-000000000001"));
+        if (profile == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        fanProfileRepository.delete(profile);
+        return Response.ok().build();
     }
 }

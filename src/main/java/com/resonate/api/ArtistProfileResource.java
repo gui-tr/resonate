@@ -26,36 +26,39 @@ public class ArtistProfileResource {
     @APIResponse(responseCode = "200", description = "Artist profile created successfully")
     @Transactional
     public Response createArtistProfile(ArtistProfile artistProfile) {
-        artistProfileRepository.persist(artistProfile);
-        return Response.ok(artistProfile).build();
+        try {
+            artistProfileRepository.persist(artistProfile);
+            return Response.ok(artistProfile).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity("Failed to create artist profile: " + e.getMessage())
+                    .build();
+        }
     }
 
     @GET
-    @Path("/{id}")
-    @Operation(summary = "Get an artist profile by ID")
+    @Operation(summary = "Get current artist profile")
     @APIResponse(responseCode = "200", description = "Artist profile found")
     @APIResponse(responseCode = "404", description = "Artist profile not found")
-    public Response getArtistProfile(@PathParam("id") UUID id) {
-        ArtistProfile profile = artistProfileRepository.findByUserId(id);
+    public Response getCurrentProfile() {
+        ArtistProfile profile = artistProfileRepository.findByUserId(UUID.fromString("00000000-0000-0000-0000-000000000000"));
         if (profile == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.ok(profile).build();
     }
 
-    @PUT
-    @Path("/{id}")
-    @Operation(summary = "Update an artist profile")
-    @APIResponse(responseCode = "200", description = "Artist profile updated successfully")
+    @DELETE
+    @Operation(summary = "Delete current artist profile")
+    @APIResponse(responseCode = "200", description = "Artist profile deleted successfully")
     @APIResponse(responseCode = "404", description = "Artist profile not found")
     @Transactional
-    public Response updateArtistProfile(@PathParam("id") UUID id, ArtistProfile artistProfile) {
-        ArtistProfile existingProfile = artistProfileRepository.findByUserId(id);
-        if (existingProfile == null) {
+    public Response deleteCurrentProfile() {
+        ArtistProfile profile = artistProfileRepository.findByUserId(UUID.fromString("00000000-0000-0000-0000-000000000000"));
+        if (profile == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-        artistProfile.setUserId(id);
-        artistProfileRepository.persist(artistProfile);
-        return Response.ok(artistProfile).build();
+        artistProfileRepository.delete(profile);
+        return Response.ok().build();
     }
 }
