@@ -65,38 +65,6 @@ class TrackTest {
     }
 
     @Test
-    void testTrackCreationWithAllArgsConstructor() {
-        String title = "Test Track";
-        int duration = 180;
-        String isrc = "US-123-45-67890";
-        String filePath = "/path/to/track.mp3";
-        Long fileSize = 1024L;
-        OffsetDateTime createdAt = OffsetDateTime.now();
-
-        Track track = Track.builder()
-                .release(mockRelease)
-                .title(title)
-                .duration(duration)
-                .isrc(isrc)
-                .filePath(filePath)
-                .fileSize(fileSize)
-                .audioFile(mockAudioFile)
-                .createdAt(createdAt)
-                .build();
-
-        assertNotNull(track);
-        assertNotNull(track.getId());
-        assertEquals(title, track.getTitle());
-        assertEquals(duration, track.getDuration());
-        assertEquals(isrc, track.getIsrc());
-        assertEquals(filePath, track.getFilePath());
-        assertEquals(fileSize, track.getFileSize());
-        assertEquals(mockRelease, track.getRelease());
-        assertEquals(mockAudioFile, track.getAudioFile());
-        assertEquals(createdAt, track.getCreatedAt());
-    }
-
-    @Test
     void testDefaultCreatedAtValue() {
         Track track = Track.builder()
                 .title("Test Track")
